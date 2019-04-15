@@ -12,7 +12,9 @@
 #include <limits>
 #include <optional>
 
+#ifndef M_PI
 static const float M_PI = 3.14159265359f;
+#endif
 
 Circle::Circle(Color c, Vec2 center, float r) : Shape(c), center(center), r(r)
 {

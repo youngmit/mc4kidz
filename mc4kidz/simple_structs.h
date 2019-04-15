@@ -1,4 +1,5 @@
 #pragma once
+#include <cmath>
 #include <cstdint>
 #include <iostream>
 
@@ -89,7 +90,7 @@ struct Vec2 {
 
     float norm() const
     {
-        return sqrt(x * x + y * y);
+        return std::sqrt(x * x + y * y);
     }
 
     friend std::ostream &operator<<(std::ostream &os, const Vec2 &v);
