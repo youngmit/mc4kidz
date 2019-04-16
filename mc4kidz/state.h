@@ -21,7 +21,7 @@ public:
 
     // Simulate the motion of particles for a frame/time step.
     // Handle collisions that occur
-    void tic();
+    void tic(bool force=false);
 
     void draw() const;
 
@@ -31,6 +31,11 @@ public:
     void toggle_waypoints()
     {
         _draw_waypoints = !_draw_waypoints;
+    }
+
+    void toggle_pause(){
+        _paused = !_paused;
+        std::cout << "Pause: " << _paused << "\n";
     }
 
     // Sample a particle interaction. Return whether the particle survived.
@@ -58,4 +63,5 @@ private:
     std::uniform_real_distribution<float> _angle_distribution;
     std::uniform_real_distribution<float> _unit_distribution;
     bool _draw_waypoints = false;
+    bool _paused = true;
 };

@@ -28,7 +28,7 @@ State::State()
 
     for (int ix = 0; ix < NPINS_X; ++ix) {
         for (int iy = 0; iy < NPINS_Y; ++iy) {
-            const Material *mat = (ix == iy) ? &_materials.get_by_name("UO2")
+            const Material *mat = (ix == iy) ? &_materials.get_by_name("Black")
                                              : &_materials.get_by_name("UO2");
             auto color = ix == iy ? gray : fuel;
             _mesh.add_shape(
@@ -69,6 +69,7 @@ void State::draw() const
     }
 
     _mesh.draw();
+
     for (auto &p : _particles) {
         Circle c(PARTICLE_COLOR, p.location, 0.02f);
         c.draw();
@@ -138,8 +139,12 @@ void State::interact(size_t id)
     return;
 }
 
-void State::tic()
+void State::tic(bool force)
 {
+    if (_paused ^ force) {
+        return;
+    }
+
     _process_queue.clear();
     size_t id = 0;
     for (auto &p : _particles) {
@@ -150,6 +155,7 @@ void State::tic()
             p.location.y > 10.0f) {
             if (_bc == BoundaryCondition::VACUUM) {
                 p.alive = false;
+                process = false;
                 continue;
             }
             if (_bc == BoundaryCondition::REFLECTIVE) {
@@ -172,6 +178,7 @@ void State::tic()
                 _mesh.transport_particle(p, _random);
             }
         }
+
         if (process) {
             _process_queue.push_back(id);
         }
@@ -182,15 +189,13 @@ void State::tic()
     for (const auto id : _process_queue) {
         interact(id);
     }
+
     _process_queue.clear();
 
     // remove dead particles
     auto new_end = std::remove_if(_particles.begin(), _particles.end(),
                                   [](Particle &p) { return !p.alive; });
     _particles.erase(new_end, _particles.end());
-
-    // std::cout << "# of particles: " << _particles.size() << "\n";
-    // assert(_particles.size() < 1500);
 }
 
 void State::toggle_boundary_condition()

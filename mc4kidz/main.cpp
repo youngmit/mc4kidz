@@ -22,11 +22,11 @@ void display()
     glFlush();
 }
 
-void timer(int value)
+void timer(int paused)
 {
     state->tic();
     glutPostRedisplay();
-    glutTimerFunc(20, timer, value);
+    glutTimerFunc(20, timer, paused);
 }
 
 void reshape(int width, int height)
@@ -58,6 +58,13 @@ void key(unsigned char key, int x, int y)
         break;
     case 'w':
         state->toggle_waypoints();
+        break;
+    case 'p':
+        state->toggle_pause();
+        break;
+    case ' ':
+        state->tic(true);
+        glutPostRedisplay();
         break;
     }
     return;
