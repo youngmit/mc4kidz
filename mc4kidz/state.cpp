@@ -81,6 +81,17 @@ void State::draw() const
         }
     }
 
+    if(_labels) {
+        glColor3f(1.0f, 1.0f, 1.0f);
+        for(size_t id=0; id<_particles.size(); ++id) {
+            glRasterPos2f(_particles[id].location.x, _particles[id].location.y);
+            std::stringstream sstream;
+            sstream << id;
+            auto id_str = sstream.str();
+            glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char *)id_str.c_str());
+        }
+    }
+
     // Print statistics, etc
     std::stringstream sstream;
     sstream << "Neutron population: " << _particles.size();

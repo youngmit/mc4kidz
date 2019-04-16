@@ -62,6 +62,10 @@ void key(unsigned char key, int x, int y)
     case 'p':
         state->toggle_pause();
         break;
+    case 'l':
+        state->toggle_labels();
+        glutPostRedisplay();
+        break;
     case ' ':
         state->tic(true);
         glutPostRedisplay();
@@ -73,10 +77,6 @@ void key(unsigned char key, int x, int y)
 int main(int argc, char *argv[])
 {
     std::cout << "Here we go!\n";
-
-    Vec2 p1{0.0, 0.0};
-    Vec2 p2{1.0, 1.0};
-    p1 = p1 + p2;
 
     state = std::make_unique<State>();
 

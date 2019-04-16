@@ -38,6 +38,10 @@ public:
         std::cout << "Pause: " << _paused << "\n";
     }
 
+    void toggle_labels() {
+        _labels = !_labels;
+    }
+
     // Sample a particle interaction. Return whether the particle survived.
     void interact(size_t id);
 
@@ -64,4 +68,5 @@ private:
     std::uniform_real_distribution<float> _unit_distribution;
     bool _draw_waypoints = false;
     bool _paused = true;
+    bool _labels = false;
 };
