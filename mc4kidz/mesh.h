@@ -53,6 +53,8 @@ public:
         return _total_distance / _n_collisions;
 	}
 
+	size_t find_region(Vec2 location) const;
+
 private:
     float _width;
     float _height;

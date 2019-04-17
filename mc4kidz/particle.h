@@ -3,27 +3,32 @@
 #include <iostream>
 #include <random>
 
-#include "simple_structs.h"
 #include "materials.h"
+#include "simple_structs.h"
 
 extern std::uniform_real_distribution<float> uniform;
 
 struct Particle {
 public:
-    Particle(Vec2 l, Vec2 v) : location(l), direction(v), alive(true)
+    Particle(Vec2 l, Vec2 v)
+        : location(l), direction(v), alive(true)
     {
         return;
     }
 
     bool tic(float t)
     {
-        Vec2 delta = direction * speed * t;
-        distance -= delta.norm();
-        if (distance >= 0.0f) {
-            location += delta;
-        }
+        float delta = speed * t;
+        bool done  = false;
+        if (delta > distance) {
+            delta = distance;
+            done  = true;
+		}
+		
+        distance -= delta;
+        location += direction * delta;
 
-        return distance < 0.0;
+        return done;
     }
 
     float sample_distance(std::default_random_engine &r)

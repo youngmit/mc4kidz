@@ -29,9 +29,9 @@ public:
 
     bool point_inside(Vec2 p) const
     {
-        return (p.x - center.x) * (p.x - center.x) +
-                   (p.y - center.y) * (p.y - center.y) <
-               r * r;
+        return ((p.x - center.x) * (p.x - center.x) +
+                (p.y - center.y) * (p.y - center.y)) <
+               (r * r);
     }
 
     Vec2 center;

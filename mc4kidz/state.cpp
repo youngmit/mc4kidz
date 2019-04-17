@@ -51,7 +51,7 @@ void State::reset()
     _particles.clear();
     _process_queue.clear();
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 100; ++i) {
         float angle = _angle_distribution(_random);
         Vec2 direction{sin(angle), cos(angle)};
         Particle p(Vec2{5.f, 5.f}, direction);
@@ -111,12 +111,14 @@ void State::draw() const
 
 void State::interact(size_t id)
 {
+    Vec2 test_center        = {5.5f, 5.5f};
     float r                 = _unit_distribution(_random);
     Particle &p             = _particles[id];
+    float dist_from_test    = (p.location - test_center).norm();
     Material const *mat     = p.material;
     Interaction interaction = mat->interaction_cdf[p.e_group].sample(r);
 
-    if (interaction == Interaction::CAPTURE) {
+     if (interaction == Interaction::CAPTURE) {
         p.alive = false;
         return;
     }
