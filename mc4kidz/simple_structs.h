@@ -88,6 +88,11 @@ struct Vec2 {
         return result;
     }
 
+    bool operator==(const Vec2 &other) const
+    {
+        return x == other.x && y == other.y;
+    }
+
     float norm() const
     {
         return std::sqrt(x * x + y * y);
