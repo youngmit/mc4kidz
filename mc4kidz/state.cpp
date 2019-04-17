@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <sstream>
+#include <tuple>
 
 #ifdef WIN32
 #define NOMINMAX
@@ -22,15 +23,20 @@ State::State()
 {
     Color gray{0.1f, 0.1f, 0.1f, 1.0f};
     Color fuel{0.5f, 0.0f, 0.0f, 1.0f};
-    Color white{1.f, 1.f, 1.f, 1.f};
+    Color white{1.0f, 10.f, 10.f, 10.f};
+    Color black{0.0f, 0.0f, 0.0f, 0.0f};
+
+	_pin_types[PinType::FUEL] = std::make_tuple(fuel, &_materials.get_by_name("UO2"));
+    _pin_types[PinType::MODERATOR] = std::make_tuple(black, &_materials.get_by_name("Moderator"));
+    _pin_types[PinType::BLACK] = std::make_tuple(gray, &_materials.get_by_name("Black"));
 
     _boundary.outline_color = white;
 
     for (int ix = 0; ix < NPINS_X; ++ix) {
         for (int iy = 0; iy < NPINS_Y; ++iy) {
-            const Material *mat = (ix == iy) ? &_materials.get_by_name("Black")
+            const Material *mat = (ix == iy) ? &_materials.get_by_name("UO2")
                                              : &_materials.get_by_name("UO2");
-            auto color = ix == iy ? gray : fuel;
+            auto color = ix == iy ? fuel : fuel;
             _mesh.add_shape(
                 std::make_unique<Circle>(color, Vec2{0.5f * PIN_PITCH + ix * PIN_PITCH,
                                                      0.5f * PIN_PITCH + iy * PIN_PITCH},
@@ -60,6 +66,13 @@ void State::reset()
         _mesh.transport_particle(p, _random);
         _particles.push_back(p);
     }
+}
+
+void State::resample()
+{
+    for (auto &p : _particles) {
+        _mesh.transport_particle(p, _random);
+	}
 }
 
 void State::draw() const
@@ -221,4 +234,24 @@ void State::toggle_boundary_condition()
         _bc = BoundaryCondition::VACUUM;
         break;
     }
+}
+
+void State::cycle_shape(float x, float y)
+{
+    Vec2 location = {x, y};
+    auto [color, mat] = _mesh.get_color_material_at(location);
+    if (mat == &_materials.get_by_name("Moderator")) {
+        auto[new_c, new_mat] = _pin_types[PinType::FUEL];
+        _mesh.set_color_material_at(location, new_c, new_mat);
+    } else if (mat == &_materials.get_by_name("UO2")) {
+        auto[new_c, new_mat] = _pin_types[PinType::BLACK];
+        _mesh.set_color_material_at(location, new_c, new_mat);
+    } else if (mat == &_materials.get_by_name("Black")) {
+        auto[new_c, new_mat] = _pin_types[PinType::MODERATOR];
+        _mesh.set_color_material_at(location, new_c, new_mat);
+    }
+
+	resample();
+
+	return;
 }

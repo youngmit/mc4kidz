@@ -12,6 +12,9 @@
 #include "state.h"
 
 std::unique_ptr<State> state;
+static const float WORLD_WIDTH  = 10.0f;
+static const float WORLD_HEIGHT = 10.0f;
+static const float WORLD_MARGIN = 0.1f;
 
 void display()
 {
@@ -40,9 +43,11 @@ void reshape(int width, int height)
 
     // Make sure that the smallest dimension shows the full domain in that direction
     if (width >= height) {
-        gluOrtho2D(-0.1f, 10.1 * aspect, -0.1f, 10.1f);
+        gluOrtho2D(-WORLD_MARGIN, (WORLD_HEIGHT + WORLD_MARGIN) * aspect, -WORLD_MARGIN,
+                   WORLD_WIDTH + WORLD_MARGIN);
     } else {
-        gluOrtho2D(-0.1, 10.1, -0.1, 10.1 / aspect);
+        gluOrtho2D(-WORLD_MARGIN, (WORLD_HEIGHT + WORLD_MARGIN), -WORLD_MARGIN,
+                   (WORLD_WIDTH + WORLD_MARGIN) / aspect);
     }
     return;
 }
@@ -74,6 +79,20 @@ void key(unsigned char key, int x, int y)
     return;
 }
 
+void mouse(int button, int button_state, int x, int y)
+{
+    int window_width = glutGet(GLUT_WINDOW_WIDTH);
+    int window_height = glutGet(GLUT_WINDOW_HEIGHT);
+    float world_x     = ((float)x / (float)window_width) * WORLD_WIDTH - WORLD_MARGIN;
+    float world_y     = ((float)(window_height - y) / (float)window_height) * WORLD_HEIGHT - WORLD_MARGIN;
+    std::cout << state << " " << world_x << ", " << world_y << "\n";
+
+	if (button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN) {
+        state->cycle_shape(world_x, world_y);
+    }
+    return;
+}
+
 int main(int argc, char *argv[])
 {
     std::cout << "Here we go!\n";
@@ -87,6 +106,7 @@ int main(int argc, char *argv[])
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutKeyboardFunc(key);
+    glutMouseFunc(mouse);
     glutTimerFunc(20, timer, 0);
     glutMainLoop();
     return 0;

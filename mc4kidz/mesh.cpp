@@ -61,7 +61,6 @@ void Mesh::transport_particle(Particle &particle,
     _total_distance += distance;
     _n_collisions++;
 
-    particle.destination = particle.location + particle.direction * distance;
     particle.distance    = distance;
     particle.waypoints.push_back(particle.location + particle.direction * distance);
 }

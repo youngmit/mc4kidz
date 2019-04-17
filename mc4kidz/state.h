@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <random>
 #include <vector>
+#include <tuple>
+#include <unordered_map>
 
 #include "materials.h"
 #include "mesh.h"
@@ -12,12 +14,17 @@
 
 enum class BoundaryCondition : uint8_t { VACUUM, REFLECTIVE };
 
+enum class PinType : uint8_t {FUEL, MODERATOR, BLACK};
+
 class State {
 public:
     State();
 
     // Wipe out any existing particles and spawn a new batch
     void reset();
+
+	// Re-transport all particles; we do this when the system changes
+	void resample();
 
     // Simulate the motion of particles for a frame/time step.
     // Handle collisions that occur
@@ -41,6 +48,9 @@ public:
     void toggle_labels() {
         _labels = !_labels;
     }
+
+	// Cycle the shape in the mesh from one to the next in a collection
+    void cycle_shape(float x, float y);
 
     // Sample a particle interaction. Return whether the particle survived.
     void interact(size_t id);
@@ -69,4 +79,6 @@ private:
     bool _draw_waypoints = false;
     bool _paused = true;
     bool _labels = false;
+
+	std::unordered_map<PinType, std::tuple<Color, const Material *>> _pin_types;
 };
