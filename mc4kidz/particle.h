@@ -18,7 +18,7 @@ public:
 
     bool tic(float t)
     {
-        float delta = speed * t;
+        float delta = speed/(float)(e_group+1) * t;
         bool done  = false;
         if (delta > distance) {
             delta = distance;
