@@ -2,7 +2,7 @@
 # and include sub-projects here.
 #
 project ("mc4kidz")
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.10)
 
 
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
@@ -44,8 +44,6 @@ add_definitions(-D_UNICODE -DUNICODE -DWXUSINGDLL -DwxUSE_GUI=1 -D__WXMSW__)
   endif()
 
 message(STATUS "wx libraries ${wxWidgets_LIBRARIES}")
-
-
 
 # Include sub-projects.
 add_subdirectory ("mc4kidz")

@@ -4,10 +4,9 @@ target_include_directories(libmc4kidz PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 message(STATUS "libs ${wxWidgets_LIBRARIES}")
 
-target_link_libraries(libmc4kidz INTERFACE OpenGL::OpenGL ${GLUT_LIBRARIES})
+target_link_libraries(libmc4kidz PRIVATE OpenGL::GL GLUT::GLUT)
 
 add_executable(mc4kidz "main.cpp")
-target_link_libraries(mc4kidz libmc4kidz OpenGL::GLU OpenGL::OpenGL ${GLUT_LIBRARIES})
-message(STATUS "GL stuff: ${OPENGL_GLU_FOUND}")
+target_link_libraries(mc4kidz PRIVATE libmc4kidz OpenGL::GL GLUT::GLUT)
 
 add_subdirectory(tests)
