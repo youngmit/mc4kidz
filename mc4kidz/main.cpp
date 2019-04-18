@@ -81,13 +81,25 @@ void key(unsigned char key, int x, int y)
 
 void mouse(int button, int button_state, int x, int y)
 {
-    int window_width = glutGet(GLUT_WINDOW_WIDTH);
+    int window_width  = glutGet(GLUT_WINDOW_WIDTH);
     int window_height = glutGet(GLUT_WINDOW_HEIGHT);
-    float world_x     = ((float)x / (float)window_width) * WORLD_WIDTH - WORLD_MARGIN;
-    float world_y     = ((float)(window_height - y) / (float)window_height) * WORLD_HEIGHT - WORLD_MARGIN;
-    std::cout << state << " " << world_x << ", " << world_y << "\n";
 
-	if (button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN) {
+    // This is some nasty jazz. Should probably make a class to manage the
+    // display...
+    float scale = 0.0;
+    if (window_width <= window_height) {
+        float world_size = WORLD_WIDTH + 2.0f * WORLD_MARGIN;
+        scale            = (float)window_width / world_size;
+    } else {
+        float world_size = WORLD_HEIGHT + 2.0f * WORLD_MARGIN;
+        scale            = (float)window_height / world_size;
+    }
+
+    float world_x = (float)x / scale - WORLD_MARGIN;
+    float world_y = (float)(window_height - y) / scale - WORLD_MARGIN;
+    std::cout << button_state << " " << world_x << ", " << world_y << "\n";
+
+    if (button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN) {
         state->cycle_shape(world_x, world_y);
     }
     return;
