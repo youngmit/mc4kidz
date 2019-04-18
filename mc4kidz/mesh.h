@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <random>
 #include <tuple>
 #include <vector>
@@ -25,17 +26,25 @@ public:
         _materials.push_back(material);
     }
 
-    std::tuple<Color, const Material *> get_color_material_at(Vec2 location) const
+    std::optional<std::tuple<Color, const Material *>>
+    get_color_material_at(Vec2 location) const
     {
         auto i_reg = find_region(location);
-        return std::make_tuple(_shapes[i_reg]->color, _materials[i_reg]);
+        if (!i_reg) {
+            return std::nullopt;
+        }
+        std::cout << i_reg.value() << "\n";
+        return std::make_tuple(_shapes[i_reg.value()]->color,
+                               _materials[i_reg.value()]);
     }
 
     void set_color_material_at(Vec2 location, Color c, const Material *mat)
     {
         auto i_reg = find_region(location);
-        _shapes[i_reg]->color = c;
-        _materials[i_reg]     = mat;
+        if (i_reg) {
+            _shapes[i_reg.value()]->color = c;
+            _materials[i_reg.value()]     = mat;
+        }
         return;
     }
 
@@ -68,7 +77,7 @@ public:
         return _total_distance / _n_collisions;
     }
 
-    size_t find_region(Vec2 location) const;
+    std::optional<size_t> find_region(Vec2 location) const;
 
 private:
     float _width;

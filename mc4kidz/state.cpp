@@ -239,7 +239,12 @@ void State::toggle_boundary_condition()
 void State::cycle_shape(float x, float y)
 {
     Vec2 location = {x, y};
-    auto [color, mat] = _mesh.get_color_material_at(location);
+    auto result = _mesh.get_color_material_at(location);
+    if(!result) {
+        return;
+    }
+
+    auto [color, mat] = result.value();
     if (mat == &_materials.get_by_name("Moderator")) {
         auto[new_c, new_mat] = _pin_types[PinType::FUEL];
         _mesh.set_color_material_at(location, new_c, new_mat);

@@ -3,7 +3,7 @@
 void Mesh::transport_particle(Particle &particle,
                               std::default_random_engine &random) const
 {
-    auto i_reg = find_region(particle.location);
+    auto i_reg             = find_region(particle.location);
     const Material *mat    = particle.material;
     float distance         = 0.0;
     Vec2 location          = particle.location;
@@ -34,25 +34,25 @@ void Mesh::transport_particle(Particle &particle,
             // Particle made it into the next region. Update the location to a
             // little past the surface to prevent weirdness. This is usually
             // more difficult, since we dont allow shapes to intersect.
-			
-			// TODO: I don't think this extra bump should be necessary, but it
-			// is. Should circle back to this if i have time...
-            auto delta       = particle.direction * (d_to_s * 1.0001f);
-            location         = location + delta;
+
+            // TODO: I don't think this extra bump should be necessary, but it
+            // is. Should circle back to this if i have time...
+            auto delta = particle.direction * (d_to_s * 1.0001f);
+            location   = location + delta;
             particle.waypoints.push_back(location);
             distance += d_to_s;
 
             // We know we are crossing a surface, so we are either entering the
-			// coincident shape or exiting.
-            if (i_reg == -1) {
-				// We __were__ ouside of the surface. now inside
-                mat    = _materials[surface_i];
-                i_reg  = surface_i;
+            // coincident shape or exiting.
+            if (!i_reg) {
+                // We __were__ ouside of the surface. now inside
+                mat             = _materials[surface_i];
+                i_reg           = surface_i;
                 coincident_surf = surface_i;
             } else {
-				// We __were__ inside the surface. now outside
-                mat    = _inter_mat;
-                i_reg  = -1;
+                // We __were__ inside the surface. now outside
+                mat   = _inter_mat;
+                i_reg = std::nullopt;
             }
             particle.material = mat;
         }
@@ -61,16 +61,16 @@ void Mesh::transport_particle(Particle &particle,
     _total_distance += distance;
     _n_collisions++;
 
-    particle.distance    = distance;
+    particle.distance = distance;
     particle.waypoints.push_back(particle.location + particle.direction * distance);
 }
 
-size_t Mesh::find_region(Vec2 location) const
+std::optional<size_t> Mesh::find_region(Vec2 location) const
 {
     for (size_t i = 0; i < _shapes.size(); ++i) {
         if (_shapes[i]->point_inside(location)) {
             return i;
         }
     }
-    return -1;
+    return std::nullopt;
 }
