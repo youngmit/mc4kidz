@@ -18,7 +18,7 @@ public:
 
     bool tic(float t)
     {
-        float delta = speed/(float)(e_group+1) * t;
+        float delta = base_speed/(float)(e_group+1) * t;
         bool done  = false;
         if (delta > distance) {
             delta = distance;
@@ -41,9 +41,10 @@ public:
     Vec2 location;
     Vec2 direction;
     std::vector<Vec2> waypoints;
-    float speed    = 0.05f;
+    static float base_speed;
     float distance = 1.0f;
     int e_group    = 0;
+    unsigned int generation = 0;
     bool alive     = true;
 
     const Material *material = nullptr;

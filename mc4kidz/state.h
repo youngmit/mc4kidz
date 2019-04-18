@@ -65,17 +65,25 @@ private:
     const float PIN_PITCH  = 1.0f;
 
     std::vector<Particle> _particles;
-    // Collection of indices into _particles which need to process a collision this time
-    // step.
+    // Collection of indices into _particles which need to process a collision
+    // this time step.
     // Kept as object state to prevent reallocation.
     std::vector<size_t> _process_queue;
+
+    // Total number of particles born into each generation
+    std::vector<unsigned int> _generation_population;
+    
     MaterialLibrary _materials;
     Mesh _mesh;
     Box _boundary;
     BoundaryCondition _bc = BoundaryCondition::VACUUM;
+
+    // RNG stuff
     std::default_random_engine _random;
     std::uniform_real_distribution<float> _angle_distribution;
     std::uniform_real_distribution<float> _unit_distribution;
+
+    // Drawing settings
     bool _draw_waypoints = false;
     bool _paused = true;
     bool _labels = false;

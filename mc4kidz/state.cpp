@@ -26,9 +26,11 @@ State::State()
     Color white{1.0f, 10.f, 10.f, 10.f};
     Color black{0.0f, 0.0f, 0.0f, 0.0f};
 
-	_pin_types[PinType::FUEL] = std::make_tuple(fuel, &_materials.get_by_name("UO2"));
-    _pin_types[PinType::MODERATOR] = std::make_tuple(black, &_materials.get_by_name("Moderator"));
-    _pin_types[PinType::BLACK] = std::make_tuple(gray, &_materials.get_by_name("Black"));
+    _pin_types[PinType::FUEL] = std::make_tuple(fuel, &_materials.get_by_name("UO2"));
+    _pin_types[PinType::MODERATOR] =
+        std::make_tuple(black, &_materials.get_by_name("Moderator"));
+    _pin_types[PinType::BLACK] =
+        std::make_tuple(gray, &_materials.get_by_name("Black"));
 
     _boundary.outline_color = white;
 
@@ -38,8 +40,9 @@ State::State()
                                              : &_materials.get_by_name("UO2");
             auto color = ix == iy ? fuel : fuel;
             _mesh.add_shape(
-                std::make_unique<Circle>(color, Vec2{0.5f * PIN_PITCH + ix * PIN_PITCH,
-                                                     0.5f * PIN_PITCH + iy * PIN_PITCH},
+                std::make_unique<Circle>(color,
+                                         Vec2{0.5f * PIN_PITCH + ix * PIN_PITCH,
+                                              0.5f * PIN_PITCH + iy * PIN_PITCH},
                                          PIN_RADIUS),
                 mat);
         }
@@ -47,6 +50,10 @@ State::State()
 
     // Some reasonable amount of particles to start
     _particles.reserve(1'500);
+
+    // Reasonable starting number of generations
+    _generation_population.reserve(1'000);
+
     reset();
 
     return;
@@ -56,8 +63,13 @@ void State::reset()
 {
     _particles.clear();
     _process_queue.clear();
+    _generation_population.clear();
 
-    for (int i = 0; i < 100; ++i) {
+    unsigned int n_starting = 1'500;
+
+    _generation_population.push_back(n_starting);
+
+    for (unsigned int i = 0; i < n_starting; ++i) {
         float angle = _angle_distribution(_random);
         Vec2 direction{sin(angle), cos(angle)};
         Particle p(Vec2{5.f, 5.f}, direction);
@@ -72,7 +84,7 @@ void State::resample()
 {
     for (auto &p : _particles) {
         _mesh.transport_particle(p, _random);
-	}
+    }
 }
 
 void State::draw() const
@@ -94,14 +106,15 @@ void State::draw() const
         }
     }
 
-    if(_labels) {
+    if (_labels) {
         glColor3f(1.0f, 1.0f, 1.0f);
-        for(size_t id=0; id<_particles.size(); ++id) {
+        for (size_t id = 0; id < _particles.size(); ++id) {
             glRasterPos2f(_particles[id].location.x, _particles[id].location.y);
             std::stringstream sstream;
             sstream << id;
             auto id_str = sstream.str();
-            glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char *)id_str.c_str());
+            glutBitmapString(GLUT_BITMAP_HELVETICA_18,
+                             (const unsigned char *)id_str.c_str());
         }
     }
 
@@ -120,18 +133,26 @@ void State::draw() const
     auto mdtc_str = sstream.str();
     glRasterPos2f(1.0f, 1.5f);
     glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char *)mdtc_str.c_str());
+
+    for (size_t gen = 0; gen < _generation_population.size(); ++gen) {
+        sstream.str("");
+        sstream << "Generation " << gen << ": " << _generation_population[gen];
+        pop_str = sstream.str();
+        glRasterPos2f(8.0, 9.5f - 0.5f * gen);
+        glutBitmapString(GLUT_BITMAP_HELVETICA_18,
+                         (const unsigned char *)pop_str.c_str());
+    }
 }
 
 void State::interact(size_t id)
 {
     Vec2 test_center        = {5.5f, 5.5f};
     float r                 = _unit_distribution(_random);
-    Particle &p             = _particles[id];
-    float dist_from_test    = (p.location - test_center).norm();
+    Particle &p              = _particles[id];
     Material const *mat     = p.material;
     Interaction interaction = mat->interaction_cdf[p.e_group].sample(r);
 
-     if (interaction == Interaction::CAPTURE) {
+    if (interaction == Interaction::CAPTURE) {
         p.alive = false;
         return;
     }
@@ -145,16 +166,18 @@ void State::interact(size_t id)
     }
     if (interaction == Interaction::FISSION) {
         p.alive     = false;
+        Particle old_p = p;
         float new_r = _unit_distribution(_random);
         int nu      = new_r > 0.5 ? 3 : 2;
-        // Be careful here. We are pushing onto the back of the vector, which will
-        // invalidate our reference to p. No touching or looking at p after any push
-        // backs!
-        auto location = p.location;
         for (int i = 0; i < nu; ++i) {
             float angle = _angle_distribution(_random);
             Vec2 direction{sin(angle), cos(angle)};
-            Particle p2(location, direction);
+            Particle p2(old_p.location, direction);
+            p2.generation = old_p.generation + 1;
+            if (p2.generation > _generation_population.size()) {
+                _generation_population.push_back(0);
+            }
+            _generation_population[p2.generation] += 1;
             p2.material = mat;
             _mesh.transport_particle(p2, _random);
             _particles.push_back(p2);
@@ -239,24 +262,24 @@ void State::toggle_boundary_condition()
 void State::cycle_shape(float x, float y)
 {
     Vec2 location = {x, y};
-    auto result = _mesh.get_color_material_at(location);
-    if(!result) {
+    auto result   = _mesh.get_color_material_at(location);
+    if (!result) {
         return;
     }
 
     auto [color, mat] = result.value();
     if (mat == &_materials.get_by_name("Moderator")) {
-        auto[new_c, new_mat] = _pin_types[PinType::FUEL];
+        auto [new_c, new_mat] = _pin_types[PinType::FUEL];
         _mesh.set_color_material_at(location, new_c, new_mat);
     } else if (mat == &_materials.get_by_name("UO2")) {
-        auto[new_c, new_mat] = _pin_types[PinType::BLACK];
+        auto [new_c, new_mat] = _pin_types[PinType::BLACK];
         _mesh.set_color_material_at(location, new_c, new_mat);
     } else if (mat == &_materials.get_by_name("Black")) {
-        auto[new_c, new_mat] = _pin_types[PinType::MODERATOR];
+        auto [new_c, new_mat] = _pin_types[PinType::MODERATOR];
         _mesh.set_color_material_at(location, new_c, new_mat);
     }
 
-	resample();
+    resample();
 
-	return;
+    return;
 }
