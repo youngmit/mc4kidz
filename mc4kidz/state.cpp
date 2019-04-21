@@ -19,11 +19,11 @@ std::vector<Color> make_particle_colors()
 {
     std::vector<Color> colors;
 
-    colors.push_back(Color{1.0f, 0.0f, 0.0f, 1.0f}); // Red 
+    colors.push_back(Color{1.0f, 0.0f, 0.0f, 1.0f});   // Red
     colors.push_back(Color{1.0f, 0.647f, 0.0f, 1.0f}); // Orange
-    colors.push_back(Color{1.0f, 1.0f, 0.0f, 1.0f}); // Yellow
-    colors.push_back(Color{0.0f, 1.0f, 0.0f, 1.0f}); // Green
-    colors.push_back(Color{0.0f, 0.0f, 1.0f, 1.0f}); // Blue
+    colors.push_back(Color{1.0f, 1.0f, 0.0f, 1.0f});   // Yellow
+    colors.push_back(Color{0.0f, 1.0f, 0.0f, 1.0f});   // Green
+    colors.push_back(Color{0.0f, 0.0f, 1.0f, 1.0f});   // Blue
     colors.push_back(Color{0.901f, 0.0f, 1.0f, 1.0f}); // purple
 
     return colors;
@@ -33,18 +33,18 @@ State::State()
     : _particle_colors(make_particle_colors()),
       _materials(C5G7()),
       _mesh(NPINS_X * PIN_PITCH, NPINS_Y * PIN_PITCH,
-            &_materials.get_by_name("Moderator")),
+            &_materials.get_by_name("Moderator"), MODERATOR_COLOR),
       _boundary(Color{0.0f, 0.0f, 0.0f, 0.0f}, Vec2{0.0f, 0.0f}, Vec2{10.f, 10.f}),
       _angle_distribution(0, 6.28318530718f)
 {
-    Color gray{0.1f, 0.1f, 0.1f, 1.0f};
+    Color gray{0.3f, 0.3f, 0.3f, 1.0f};
     Color fuel{0.5f, 0.0f, 0.0f, 1.0f};
     Color white{1.0f, 10.f, 10.f, 10.f};
     Color black{0.0f, 0.0f, 0.0f, 0.0f};
 
     _pin_types[PinType::FUEL] = std::make_tuple(fuel, &_materials.get_by_name("UO2"));
     _pin_types[PinType::MODERATOR] =
-        std::make_tuple(black, &_materials.get_by_name("Moderator"));
+        std::make_tuple(MODERATOR_COLOR, &_materials.get_by_name("Moderator"));
     _pin_types[PinType::BLACK] =
         std::make_tuple(gray, &_materials.get_by_name("Black"));
 
@@ -68,7 +68,7 @@ State::State()
     _particles.reserve(1'500);
 
     // Reasonable starting number of generations
-    _generation_population.reserve(1'000);
+    _generation_born.reserve(1'000);
 
     reset();
 
@@ -79,10 +79,11 @@ void State::reset()
 {
     _particles.clear();
     _process_queue.clear();
-    _generation_population.clear();
+    _generation_born.clear();
 
     unsigned int n_starting = 100;
 
+    _generation_born.push_back(n_starting);
     _generation_population.push_back(n_starting);
 
     for (unsigned int i = 0; i < n_starting; ++i) {
@@ -105,11 +106,11 @@ void State::resample()
 
 void State::draw() const
 {
+    _mesh.draw();
+
     if (_bc == BoundaryCondition::REFLECTIVE) {
         _boundary.draw();
     }
-
-    _mesh.draw();
 
     for (auto &p : _particles) {
         Circle c(_particle_colors[p.generation % _particle_colors.size()], p.location,
@@ -151,9 +152,10 @@ void State::draw() const
     glRasterPos2f(1.0f, 1.5f);
     glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char *)mdtc_str.c_str());
 
-    for (size_t gen = 0; gen < _generation_population.size(); ++gen) {
+    for (size_t gen = 0; gen < _generation_born.size(); ++gen) {
         sstream.str("");
-        sstream << "Generation " << gen << ": " << _generation_population[gen];
+        sstream << "Generation " << gen << ": " << _generation_born[gen] << " ("
+                << _generation_population[gen] << ")";
         pop_str = sstream.str();
         glRasterPos2f(8.0, 9.5f - 0.5f * gen);
         glutBitmapString(GLUT_BITMAP_HELVETICA_18,
@@ -171,6 +173,7 @@ void State::interact(size_t id)
 
     if (interaction == Interaction::CAPTURE) {
         p.alive = false;
+        _generation_population[p.generation] -= 1;
         return;
     }
     if (interaction == Interaction::SCATTER) {
@@ -186,14 +189,17 @@ void State::interact(size_t id)
         Particle old_p = p;
         float new_r    = _unit_distribution(_random);
         int nu         = new_r > 0.5 ? 3 : 2;
+        _generation_population[old_p.generation] -= 1;
         for (int i = 0; i < nu; ++i) {
             float angle = _angle_distribution(_random);
             Vec2 direction{sin(angle), cos(angle)};
             Particle p2(old_p.location, direction);
             p2.generation = old_p.generation + 1;
-            if (p2.generation > _generation_population.size()-1) {
+            if (p2.generation > _generation_born.size() - 1) {
+                _generation_born.push_back(0);
                 _generation_population.push_back(0);
             }
+            _generation_born[p2.generation] += 1;
             _generation_population[p2.generation] += 1;
             p2.material = mat;
             _mesh.transport_particle(p2, _random);
@@ -209,6 +215,18 @@ void State::tic(bool force)
 {
     if (_paused ^ force) {
         return;
+    }
+
+    if (_source) {
+        Vec2 location = _source.value();
+
+        float angle = _angle_distribution(_random);
+        Vec2 direction{sin(angle), cos(angle)};
+        Particle p(location, direction);
+        p.material = _mesh.get_material(p.location);
+        p.e_group  = 6;
+        _mesh.transport_particle(p, _random);
+        _particles.push_back(p);
     }
 
     _process_queue.clear();

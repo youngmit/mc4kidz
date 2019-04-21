@@ -102,6 +102,39 @@ void mouse(int button, int button_state, int x, int y)
     if (button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN) {
         state->cycle_shape(world_x, world_y);
     }
+
+    if (button == GLUT_LEFT_BUTTON && button_state == GLUT_DOWN) {
+        state->set_source(world_x, world_y);
+    }
+
+    if (button == GLUT_LEFT_BUTTON && button_state == GLUT_UP) {
+        state->unset_source();
+    }
+    return;
+}
+
+void mouse_drag(int x, int y)
+{
+    int window_width  = glutGet(GLUT_WINDOW_WIDTH);
+    int window_height = glutGet(GLUT_WINDOW_HEIGHT);
+
+    // This is some nasty jazz. Should probably make a class to manage the
+    // display...
+    float scale = 0.0;
+    if (window_width <= window_height) {
+        float world_size = WORLD_WIDTH + 2.0f * WORLD_MARGIN;
+        scale            = (float)window_width / world_size;
+    } else {
+        float world_size = WORLD_HEIGHT + 2.0f * WORLD_MARGIN;
+        scale            = (float)window_height / world_size;
+    }
+
+    float world_x = (float)x / scale - WORLD_MARGIN;
+    float world_y = (float)(window_height - y) / scale - WORLD_MARGIN;
+
+	if (state->has_source()) {
+        state->set_source(world_x, world_y);
+	}
     return;
 }
 
@@ -119,7 +152,10 @@ int main(int argc, char *argv[])
     glutReshapeFunc(reshape);
     glutKeyboardFunc(key);
     glutMouseFunc(mouse);
+    glutMotionFunc(mouse_drag);
     glutTimerFunc(20, timer, 0);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glutMainLoop();
     return 0;
 }

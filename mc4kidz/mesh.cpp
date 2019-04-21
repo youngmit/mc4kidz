@@ -1,9 +1,36 @@
 #include "mesh.h"
 
-Mesh::Mesh(float width, float height, const Material *inter_mat)
-    : _width(width), _height(height), _inter_mat(inter_mat)
+#ifdef WIN32
+#define NOMINMAX
+#include <windows.h>
+#endif
+#include "GL/freeglut.h"
+#include "GL/gl.h"
+
+Mesh::Mesh(float width, float height, const Material *inter_mat, Color background_color)
+    : _width(width),
+      _height(height),
+      _inter_mat(inter_mat),
+      _background(background_color)
 {
     return;
+}
+
+void Mesh::draw() const
+{
+    glBegin(GL_QUADS);
+
+	glColor4f(_background.r, _background.g, _background.b, _background.a);
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(_width, 0.0f);
+    glVertex2f(_width, _height);
+    glVertex2f(0.0f, _height);
+    glEnd();
+
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    for (const auto &s : _shapes) {
+        s->draw();
+    }
 }
 
 void Mesh::transport_particle(Particle &particle,

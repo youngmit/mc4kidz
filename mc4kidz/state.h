@@ -2,6 +2,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <optional>
 #include <random>
 #include <tuple>
 #include <unordered_map>
@@ -52,6 +53,21 @@ public:
         _labels = !_labels;
     }
 
+    void set_source(float x, float y)
+    {
+        _source = Vec2{x, y};
+    }
+
+    void unset_source()
+    {
+        _source = std::nullopt;
+    }
+
+    bool has_source() const
+    {
+        return _source.has_value();
+    }
+
     // Cycle the shape in the mesh from one to the next in a collection
     void cycle_shape(float x, float y);
 
@@ -61,6 +77,7 @@ public:
 private:
     const Color PARTICLE_DEST_COLOR{0.0f, 0.0f, 1.0f, 1.0f};
     const Color PIN_COLOR{0.3f, 0.0f, 0.0f, 1.0f};
+    const Color MODERATOR_COLOR{0.0f, 0.1f, 0.4f, 1.0f};
     const int NPINS_X      = 10;
     const int NPINS_Y      = 10;
     const float PIN_RADIUS = 0.4f;
@@ -75,6 +92,7 @@ private:
     std::vector<size_t> _process_queue;
 
     // Total number of particles born into each generation
+    std::vector<unsigned int> _generation_born;
     std::vector<unsigned int> _generation_population;
 
     MaterialLibrary _materials;
@@ -94,5 +112,5 @@ private:
     bool _labels         = false;
 
     std::unordered_map<PinType, std::tuple<Color, const Material *>> _pin_types;
-
+    std::optional<Vec2> _source = std::nullopt;
 };

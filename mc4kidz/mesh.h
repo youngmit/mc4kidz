@@ -14,7 +14,7 @@
 
 class Mesh {
 public:
-    Mesh(float width, float height, const Material *inter_mat);
+    Mesh(float width, float height, const Material *inter_mat, Color background_color);
 
     void add_shape(std::unique_ptr<Shape> shape, const Material *material)
     {
@@ -44,12 +44,7 @@ public:
         return;
     }
 
-    void draw() const
-    {
-        for (const auto &s : _shapes) {
-            s->draw();
-        }
-    }
+    void draw() const;
 
     // Simulate the passage of a particle through the mesh to its next interaction.
     // This will:
@@ -81,6 +76,7 @@ private:
     std::vector<std::unique_ptr<Shape>> _shapes;
     std::vector<const Material *> _materials;
     const Material *_inter_mat;
+    Color _background;
     mutable int _n_collisions     = 0;
     mutable float _total_distance = 0.0f;
 };
