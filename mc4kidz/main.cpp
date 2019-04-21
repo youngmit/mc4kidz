@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
     state = std::make_unique<State>();
 
     glutInit(&argc, argv);
-    glutInitWindowSize(1024, 1024);
+    glutInitWindowSize(512, 512);
     glutInitWindowPosition(50, 50);
     glutCreateWindow("MC 4 Kidz!");
     glutDisplayFunc(display);

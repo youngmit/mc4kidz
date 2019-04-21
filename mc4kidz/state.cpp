@@ -3,6 +3,7 @@
 #include <memory>
 #include <sstream>
 #include <tuple>
+#include <unordered_map>
 
 #ifdef WIN32
 #define NOMINMAX
@@ -14,8 +15,23 @@
 #include "materials.h"
 #include "shapes.h"
 
+std::vector<Color> make_particle_colors()
+{
+    std::vector<Color> colors;
+
+    colors.push_back(Color{1.0f, 0.0f, 0.0f, 1.0f}); // Red 
+    colors.push_back(Color{1.0f, 0.647f, 0.0f, 1.0f}); // Orange
+    colors.push_back(Color{1.0f, 1.0f, 0.0f, 1.0f}); // Yellow
+    colors.push_back(Color{0.0f, 1.0f, 0.0f, 1.0f}); // Green
+    colors.push_back(Color{0.0f, 0.0f, 1.0f, 1.0f}); // Blue
+    colors.push_back(Color{0.901f, 0.0f, 1.0f, 1.0f}); // purple
+
+    return colors;
+}
+
 State::State()
-    : _materials(C5G7()),
+    : _particle_colors(make_particle_colors()),
+      _materials(C5G7()),
       _mesh(NPINS_X * PIN_PITCH, NPINS_Y * PIN_PITCH,
             &_materials.get_by_name("Moderator")),
       _boundary(Color{0.0f, 0.0f, 0.0f, 0.0f}, Vec2{0.0f, 0.0f}, Vec2{10.f, 10.f}),
@@ -65,7 +81,7 @@ void State::reset()
     _process_queue.clear();
     _generation_population.clear();
 
-    unsigned int n_starting = 1'500;
+    unsigned int n_starting = 100;
 
     _generation_population.push_back(n_starting);
 
@@ -96,7 +112,8 @@ void State::draw() const
     _mesh.draw();
 
     for (auto &p : _particles) {
-        Circle c(PARTICLE_COLOR, p.location, 0.02f);
+        Circle c(_particle_colors[p.generation % _particle_colors.size()], p.location,
+                 0.02f);
         c.draw();
         if (_draw_waypoints) {
             for (const auto waypoint : p.waypoints) {
@@ -148,7 +165,7 @@ void State::interact(size_t id)
 {
     Vec2 test_center        = {5.5f, 5.5f};
     float r                 = _unit_distribution(_random);
-    Particle &p              = _particles[id];
+    Particle &p             = _particles[id];
     Material const *mat     = p.material;
     Interaction interaction = mat->interaction_cdf[p.e_group].sample(r);
 
@@ -165,16 +182,16 @@ void State::interact(size_t id)
         return;
     }
     if (interaction == Interaction::FISSION) {
-        p.alive     = false;
+        p.alive        = false;
         Particle old_p = p;
-        float new_r = _unit_distribution(_random);
-        int nu      = new_r > 0.5 ? 3 : 2;
+        float new_r    = _unit_distribution(_random);
+        int nu         = new_r > 0.5 ? 3 : 2;
         for (int i = 0; i < nu; ++i) {
             float angle = _angle_distribution(_random);
             Vec2 direction{sin(angle), cos(angle)};
             Particle p2(old_p.location, direction);
             p2.generation = old_p.generation + 1;
-            if (p2.generation > _generation_population.size()) {
+            if (p2.generation > _generation_population.size()-1) {
                 _generation_population.push_back(0);
             }
             _generation_population[p2.generation] += 1;

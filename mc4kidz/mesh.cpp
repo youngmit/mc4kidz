@@ -1,5 +1,11 @@
 #include "mesh.h"
 
+Mesh::Mesh(float width, float height, const Material *inter_mat)
+    : _width(width), _height(height), _inter_mat(inter_mat)
+{
+    return;
+}
+
 void Mesh::transport_particle(Particle &particle,
                               std::default_random_engine &random) const
 {

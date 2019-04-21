@@ -14,11 +14,7 @@
 
 class Mesh {
 public:
-    Mesh(float width, float height, const Material *inter_mat)
-        : _width(width), _height(height), _inter_mat(inter_mat)
-    {
-        return;
-    }
+    Mesh(float width, float height, const Material *inter_mat);
 
     void add_shape(std::unique_ptr<Shape> shape, const Material *material)
     {
