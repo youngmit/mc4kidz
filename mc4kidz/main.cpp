@@ -9,10 +9,12 @@
 #include "GL/glut.h"
 
 #include "pie_chart.h"
+#include "info_pane.h"
 #include "shapes.h"
 #include "simple_structs.h"
 #include "state.h"
 #include "view.h"
+#include "histogram.h"
 
 static const float WORLD_WIDTH   = 10.0f;
 static const float WORLD_HEIGHT  = 10.0f;
@@ -20,6 +22,7 @@ static const float WORLD_MARGIN  = 0.1f;
 static const int INFO_PANE_WIDTH = 150;
 
 std::unique_ptr<State> state;
+std::unique_ptr<InfoPane> info_pane;
 
 void display()
 {
@@ -32,14 +35,7 @@ void display()
     glViewport(0, 0, window_width, window_height);
 
     state->draw();
-
-    glPushMatrix();
-    glLoadIdentity();
-    glViewport(window_width - INFO_PANE_WIDTH, window_height - INFO_PANE_WIDTH,
-               INFO_PANE_WIDTH, INFO_PANE_WIDTH);
-    PieChart<unsigned int> p(state->get_interaction_counts());
-    p.draw();
-    glPopMatrix();
+	info_pane->draw();
 
     glFlush();
 }
@@ -64,7 +60,6 @@ void reshape(int width, int height)
         Ortho2D view = {-WORLD_MARGIN, (WORLD_HEIGHT + WORLD_MARGIN) * aspect,
                         -WORLD_MARGIN, WORLD_WIDTH + WORLD_MARGIN};
         state->set_view(view);
-        // box_view = {0.0, 1.0, 0.0, 1.0};
     } else {
         state->set_view(Ortho2D{-WORLD_MARGIN, (WORLD_HEIGHT + WORLD_MARGIN),
                                 -WORLD_MARGIN, (WORLD_WIDTH + WORLD_MARGIN) / aspect});
@@ -163,6 +158,9 @@ int main(int argc, char *argv[])
     std::cout << "Here we go!\n";
 
     state = std::make_unique<State>();
+    info_pane = std::make_unique<InfoPane>(200);
+    info_pane->add_info(std::make_unique<InteractionPieChart>(state.get()));
+    info_pane->add_info(std::make_unique<SpectrumHistogram>(state.get()));
 
     glutInit(&argc, argv);
     glutInitWindowSize(512, 512);

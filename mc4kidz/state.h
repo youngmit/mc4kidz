@@ -79,9 +79,18 @@ public:
     // Sample a particle interaction. Return whether the particle survived.
     void interact(size_t id);
 
-	std::vector<unsigned int> get_interaction_counts()
+    std::vector<unsigned int> get_interaction_counts() const
     {
         return {_n_scatter, _n_capture, _n_fission, _n_leak};
+    }
+
+    std::vector<unsigned int> get_spectrum() const
+    {
+        std::vector<unsigned int> spectrum(7, 0);
+        for (const auto &p : _particles) {
+            spectrum[p.e_group]++;
+		}
+        return spectrum;
     }
 
 private:

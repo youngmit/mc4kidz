@@ -22,12 +22,13 @@ static const std::vector<Color> _colors = {
 
 template <typename T> void PieChart<T>::draw() const
 {
+    const auto data          = get_data();
     const int total_segments = 100;
-    T total                  = std::accumulate(_data.begin(), _data.end(), 0);
+    T total                  = std::accumulate(data.begin(), data.end(), 0);
     float stt_angle          = 0.0f;
-    for (int i = 0; i < _data.size(); ++i) {
-        float fraction   = static_cast<float>(_data[i]) / static_cast<float>(total);
-        int segments     = fraction * total_segments;
+    for (int i = 0; i < data.size(); ++i) {
+        float fraction   = static_cast<float>(data[i]) / static_cast<float>(total);
+        int segments     = std::max(1, static_cast<int>(fraction * total_segments));
         float angle_span = fraction * 2.0f * M_PI;
         float stp_angle  = stt_angle + angle_span;
 
