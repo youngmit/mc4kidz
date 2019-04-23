@@ -68,16 +68,26 @@ public:
         return _source.has_value();
     }
 
+    void State::set_view(Ortho2D view)
+    {
+        _projection_matrix = view;
+    }
+
     // Cycle the shape in the mesh from one to the next in a collection
     void cycle_shape(float x, float y);
 
     // Sample a particle interaction. Return whether the particle survived.
     void interact(size_t id);
 
+	std::vector<unsigned int> get_interaction_counts()
+    {
+        return {_n_scatter, _n_capture, _n_fission, _n_leak};
+    }
+
 private:
     const Color PARTICLE_DEST_COLOR{0.0f, 0.0f, 1.0f, 1.0f};
     const Color PIN_COLOR{0.3f, 0.0f, 0.0f, 1.0f};
-    const Color MODERATOR_COLOR{0.0f, 0.1f, 0.4f, 1.0f};
+    const Color MODERATOR_COLOR{0.0f, 0.1f, 0.3f, 1.0f};
     const int NPINS_X      = 10;
     const int NPINS_Y      = 10;
     const float PIN_RADIUS = 0.4f;
@@ -113,4 +123,12 @@ private:
 
     std::unordered_map<PinType, std::tuple<Color, const Material *>> _pin_types;
     std::optional<Vec2> _source = std::nullopt;
+
+    Ortho2D _projection_matrix;
+
+    // Interaction histories
+    unsigned int _n_capture = 0;
+    unsigned int _n_fission = 0;
+    unsigned int _n_scatter = 0;
+    unsigned int _n_leak    = 0;
 };

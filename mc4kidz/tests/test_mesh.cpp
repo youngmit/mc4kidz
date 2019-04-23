@@ -11,7 +11,7 @@
 int main()
 {
     MaterialLibrary materials = C5G7();
-    Mesh mesh(10.0f, 10.0f, &materials.get_by_name("Moderator"));
+    Mesh mesh(10.0f, 10.0f, &materials.get_by_name("Moderator"), Color{0.0, 0.0, 0.0, 0.0});
 
     Color black = {0.0f, 0.0f, 0.0f, 0.0f};
     mesh.add_shape(std::make_unique<Circle>(black, Vec2{0.0f, 0.0f}, 1.0f),

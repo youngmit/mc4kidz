@@ -38,7 +38,7 @@ State::State()
       _angle_distribution(0, 6.28318530718f)
 {
     Color gray{0.3f, 0.3f, 0.3f, 1.0f};
-    Color fuel{0.5f, 0.0f, 0.0f, 1.0f};
+    Color fuel{0.4f, 0.0f, 0.0f, 1.0f};
     Color white{1.0f, 10.f, 10.f, 10.f};
     Color black{0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -80,6 +80,12 @@ void State::reset()
     _particles.clear();
     _process_queue.clear();
     _generation_born.clear();
+    _generation_population.clear();
+
+	_n_capture = 0;
+    _n_fission = 0;
+    _n_scatter = 0;
+    _n_leak    = 0;
 
     unsigned int n_starting = 100;
 
@@ -106,6 +112,10 @@ void State::resample()
 
 void State::draw() const
 {
+    glPushMatrix();
+
+	_projection_matrix.apply();
+
     _mesh.draw();
 
     if (_bc == BoundaryCondition::REFLECTIVE) {
@@ -161,6 +171,8 @@ void State::draw() const
         glutBitmapString(GLUT_BITMAP_HELVETICA_18,
                          (const unsigned char *)pop_str.c_str());
     }
+
+	glPopMatrix();
 }
 
 void State::interact(size_t id)
@@ -172,11 +184,13 @@ void State::interact(size_t id)
     Interaction interaction = mat->interaction_cdf[p.e_group].sample(r);
 
     if (interaction == Interaction::CAPTURE) {
+        _n_capture++;
         p.alive = false;
         _generation_population[p.generation] -= 1;
         return;
     }
     if (interaction == Interaction::SCATTER) {
+        _n_scatter++;
         float angle  = _angle_distribution(_random);
         float scat_r = _unit_distribution(_random);
         p.e_group    = mat->scatter_cdf[p.e_group].sample(scat_r);
@@ -185,6 +199,7 @@ void State::interact(size_t id)
         return;
     }
     if (interaction == Interaction::FISSION) {
+        _n_fission++;
         p.alive        = false;
         Particle old_p = p;
         float new_r    = _unit_distribution(_random);
@@ -240,6 +255,7 @@ void State::tic(bool force)
             if (_bc == BoundaryCondition::VACUUM) {
                 p.alive = false;
                 process = false;
+                _n_leak++;
                 continue;
             }
             if (_bc == BoundaryCondition::REFLECTIVE) {

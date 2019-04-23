@@ -8,20 +8,39 @@
 #include "GL/gl.h"
 #include "GL/glut.h"
 
+#include "pie_chart.h"
+#include "shapes.h"
 #include "simple_structs.h"
 #include "state.h"
+#include "view.h"
+
+static const float WORLD_WIDTH   = 10.0f;
+static const float WORLD_HEIGHT  = 10.0f;
+static const float WORLD_MARGIN  = 0.1f;
+static const int INFO_PANE_WIDTH = 150;
 
 std::unique_ptr<State> state;
-static const float WORLD_WIDTH  = 10.0f;
-static const float WORLD_HEIGHT = 10.0f;
-static const float WORLD_MARGIN = 0.1f;
 
 void display()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    int window_width  = glutGet(GLUT_WINDOW_WIDTH);
+    int window_height = glutGet(GLUT_WINDOW_HEIGHT);
+
+    glViewport(0, 0, window_width, window_height);
+
     state->draw();
+
+    glPushMatrix();
+    glLoadIdentity();
+    glViewport(window_width - INFO_PANE_WIDTH, window_height - INFO_PANE_WIDTH,
+               INFO_PANE_WIDTH, INFO_PANE_WIDTH);
+    PieChart<unsigned int> p(state->get_interaction_counts());
+    p.draw();
+    glPopMatrix();
+
     glFlush();
 }
 
@@ -39,15 +58,16 @@ void reshape(int width, int height)
     glViewport(0, 0, width, height);
 
     glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
 
     // Make sure that the smallest dimension shows the full domain in that direction
     if (width >= height) {
-        gluOrtho2D(-WORLD_MARGIN, (WORLD_HEIGHT + WORLD_MARGIN) * aspect, -WORLD_MARGIN,
-                   WORLD_WIDTH + WORLD_MARGIN);
+        Ortho2D view = {-WORLD_MARGIN, (WORLD_HEIGHT + WORLD_MARGIN) * aspect,
+                        -WORLD_MARGIN, WORLD_WIDTH + WORLD_MARGIN};
+        state->set_view(view);
+        // box_view = {0.0, 1.0, 0.0, 1.0};
     } else {
-        gluOrtho2D(-WORLD_MARGIN, (WORLD_HEIGHT + WORLD_MARGIN), -WORLD_MARGIN,
-                   (WORLD_WIDTH + WORLD_MARGIN) / aspect);
+        state->set_view(Ortho2D{-WORLD_MARGIN, (WORLD_HEIGHT + WORLD_MARGIN),
+                                -WORLD_MARGIN, (WORLD_WIDTH + WORLD_MARGIN) / aspect});
     }
     return;
 }
@@ -132,9 +152,9 @@ void mouse_drag(int x, int y)
     float world_x = (float)x / scale - WORLD_MARGIN;
     float world_y = (float)(window_height - y) / scale - WORLD_MARGIN;
 
-	if (state->has_source()) {
+    if (state->has_source()) {
         state->set_source(world_x, world_y);
-	}
+    }
     return;
 }
 

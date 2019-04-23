@@ -10,7 +10,8 @@
 
 #include "array2d.h"
 
-enum class Interaction : uint8_t { SCATTER = 0, FISSION = 1, CAPTURE = 2 };
+enum class Interaction : uint8_t { SCATTER = 0, FISSION = 1, CAPTURE = 2, LEAK = 4 };
+
 class InteractionCDF {
 public:
     InteractionCDF(float total, float scatter, float fission, float capture)
@@ -45,7 +46,7 @@ public:
     {
         float total = std::accumulate(scatter.begin(), scatter.end(), 0.0f);
         float prev  = 0.0;
-        for (int ig = 0; ig < scatter.size(); ++ig) {
+        for (unsigned int ig = 0; ig < scatter.size(); ++ig) {
             prev += scatter[ig];
             _cdf[ig] = prev / total;
         }
