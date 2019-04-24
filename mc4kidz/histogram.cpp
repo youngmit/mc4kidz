@@ -19,25 +19,31 @@ void Histogram::draw() const
 
     glPushMatrix();
     glLoadIdentity();
-    gluOrtho2D(0.0f, 1.0f, 0.0f, 1.0f);
+    gluOrtho2D(-0.01f, 1.01f, -0.01f, 1.01f);
 
-    glBegin(GL_QUADS);
-    glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
-    float x_stt = 0.0f;
-    for (auto val : data) {
-        float x_stp = x_stt + bar_width;
-        float y     = static_cast<float>(val) / max_val;
+    for (auto render : {std::make_pair(GL_QUADS, Color{1.0f, 1.0f, 1.0f, 0.5f}),
+                        std::make_pair(GL_LINE_LOOP, Color{1.0f, 1.0f, 1.0f, 1.0f})}) {
+        
+        float x_stt = 0.0f;
+        for (auto val : data) {
+            glBegin(render.first);
+            glColor4f(render.second.r, render.second.g, render.second.b,
+                      render.second.a);
+            float x_stp = x_stt + bar_width;
+            float y     = static_cast<float>(val) / max_val;
 
-        glVertex2f(x_stt, 0.0f);
-        glVertex2f(x_stp, 0.0f);
-        glVertex2f(x_stp, y);
-        glVertex2f(x_stt, y);
+            glVertex2f(x_stt, 0.0f);
+            glVertex2f(x_stp, 0.0f);
+            glVertex2f(x_stp, y);
+            glVertex2f(x_stt, y);
 
-        x_stt = x_stp;
+            glEnd();
+
+			x_stt = x_stp;
+        }
     }
-    glEnd();
 
-	glPopMatrix();
+    glPopMatrix();
 
     return;
 }
