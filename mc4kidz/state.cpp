@@ -46,7 +46,7 @@ State::State()
     _pin_types[PinType::MODERATOR] =
         std::make_tuple(MODERATOR_COLOR, &_materials.get_by_name("Moderator"));
     _pin_types[PinType::BLACK] =
-        std::make_tuple(gray, &_materials.get_by_name("Black"));
+        std::make_tuple(gray, &_materials.get_by_name("Control"));
 
     _boundary.outline_color = white;
 
@@ -202,10 +202,10 @@ void State::interact(size_t id)
     if (interaction == Interaction::FISSION) {
         _n_fission++;
         p.alive        = false;
+        _generation_population[p.generation] -= 1;
         Particle old_p = p;
         float new_r    = _unit_distribution(_random);
         int nu         = new_r > 0.5 ? 3 : 2;
-        _generation_population[old_p.generation] -= 1;
         for (int i = 0; i < nu; ++i) {
             float angle = _angle_distribution(_random);
             Vec2 direction{sin(angle), cos(angle)};
@@ -243,6 +243,8 @@ void State::tic(bool force)
         Particle p(location, direction);
         p.material = _mesh.get_material(p.location);
         p.e_group  = 6;
+        _generation_born[0]++;
+        _generation_population[0]++;
         _mesh.transport_particle(p, _random);
         _particles.push_back(p);
     }
