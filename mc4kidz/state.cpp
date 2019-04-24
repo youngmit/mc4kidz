@@ -259,6 +259,7 @@ void State::tic(bool force)
                 p.alive = false;
                 process = false;
                 _n_leak++;
+                _generation_population[p.generation]--;
                 continue;
             }
             if (_bc == BoundaryCondition::REFLECTIVE) {
