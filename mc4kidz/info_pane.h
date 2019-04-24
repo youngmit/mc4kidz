@@ -7,7 +7,7 @@
 
 class InfoPane : public Drawable {
 public:
-    InfoPane(int width) : _width(width)
+    InfoPane(int width, int margin=0) : _width(width), _margin(margin)
     {
         return;
     }
@@ -21,5 +21,6 @@ public:
 
 private:
     int _width;
+    int _margin;
     std::vector<std::unique_ptr<Drawable>> _info;
 };

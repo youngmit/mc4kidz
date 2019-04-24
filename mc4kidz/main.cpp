@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
     std::cout << "Here we go!\n";
 
     state     = std::make_unique<State>();
-    info_pane = std::make_unique<InfoPane>(200);
+    info_pane = std::make_unique<InfoPane>(200, 10);
     info_pane->add_info(std::make_unique<InteractionPieChart>(state.get()));
     info_pane->add_info(std::make_unique<SpectrumHistogram>(state.get()));
     info_pane->add_info(std::make_unique<PopulationLinePlot>(state.get()));
