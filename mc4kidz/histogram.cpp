@@ -14,12 +14,16 @@ void Histogram::draw() const
 {
     const auto data = _get_data();
     size_t n_data   = data.size();
-    float bar_width = 2.0f / static_cast<float>(n_data);
+    float bar_width = 1.0f / static_cast<float>(n_data);
     float max_val   = static_cast<float>(*std::max_element(data.begin(), data.end()));
+
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(0.0f, 1.0f, 0.0f, 1.0f);
 
     glBegin(GL_QUADS);
     glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
-    float x_stt = -1.0f;
+    float x_stt = 0.0f;
     for (auto val : data) {
         float x_stp = x_stt + bar_width;
         float y     = static_cast<float>(val) / max_val;
@@ -32,6 +36,8 @@ void Histogram::draw() const
         x_stt = x_stp;
     }
     glEnd();
+
+	glPopMatrix();
 
     return;
 }
