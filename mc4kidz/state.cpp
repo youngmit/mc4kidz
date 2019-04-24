@@ -67,9 +67,6 @@ State::State()
     // Some reasonable amount of particles to start
     _particles.reserve(1'500);
 
-    // Reasonable starting number of generations
-    _generation_born.reserve(1'000);
-
     reset();
 
     return;
@@ -81,8 +78,12 @@ void State::reset()
     _process_queue.clear();
     _generation_born.clear();
     _generation_population.clear();
+    _population_history.clear();
+    _population_history.reserve(MAX_POP_HIST);
+    _history_resolution = 1;
+    _time_step          = 0;
 
-	_n_capture = 0;
+    _n_capture = 0;
     _n_fission = 0;
     _n_scatter = 0;
     _n_leak    = 0;
@@ -114,7 +115,7 @@ void State::draw() const
 {
     glPushMatrix();
 
-	_projection_matrix.apply();
+    _projection_matrix.apply();
 
     _mesh.draw();
 
@@ -172,7 +173,7 @@ void State::draw() const
                          (const unsigned char *)pop_str.c_str());
     }
 
-	glPopMatrix();
+    glPopMatrix();
 }
 
 void State::interact(size_t id)
@@ -231,6 +232,8 @@ void State::tic(bool force)
     if (_paused ^ force) {
         return;
     }
+
+    _time_step++;
 
     if (_source) {
         Vec2 location = _source.value();
@@ -296,6 +299,28 @@ void State::tic(bool force)
     auto new_end = std::remove_if(_particles.begin(), _particles.end(),
                                   [](Particle &p) { return !p.alive; });
     _particles.erase(new_end, _particles.end());
+
+    if (_time_step % _history_resolution == 0) {
+        if (_population_history.size() == MAX_POP_HIST) {
+            _resample_population();
+        }
+        _population_history.push_back(_particles.size());
+    }
+    assert(_particles.size() == std::accumulate(_generation_population.begin(),
+                                                _generation_population.end(), 0));
+}
+
+// Double the history resolution and discard every other population sample.
+// Shift remaining values down and resize the vector
+void State::_resample_population()
+{
+    _history_resolution *= 2;
+    for (size_t i = 0; i < _population_history.size() / 2; ++i) {
+        _population_history[i] = _population_history[i * 2];
+    }
+
+    _population_history.resize(_population_history.size() / 2);
+    return;
 }
 
 void State::toggle_boundary_condition()

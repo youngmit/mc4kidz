@@ -89,18 +89,24 @@ public:
         std::vector<unsigned int> spectrum(7, 0);
         for (const auto &p : _particles) {
             spectrum[p.e_group]++;
-		}
+        }
         return spectrum;
+    }
+
+    const std::vector<unsigned int> &get_population_history() const
+    {
+        return _population_history;
     }
 
 private:
     const Color PARTICLE_DEST_COLOR{0.0f, 0.0f, 1.0f, 1.0f};
     const Color PIN_COLOR{0.3f, 0.0f, 0.0f, 1.0f};
     const Color MODERATOR_COLOR{0.0f, 0.1f, 0.3f, 1.0f};
-    const int NPINS_X      = 10;
-    const int NPINS_Y      = 10;
-    const float PIN_RADIUS = 0.4f;
-    const float PIN_PITCH  = 1.0f;
+    const int NPINS_X         = 10;
+    const int NPINS_Y         = 10;
+    const float PIN_RADIUS    = 0.4f;
+    const float PIN_PITCH     = 1.0f;
+    const size_t MAX_POP_HIST = 1000;
 
     const std::vector<Color> _particle_colors;
 
@@ -112,7 +118,14 @@ private:
 
     // Total number of particles born into each generation
     std::vector<unsigned int> _generation_born;
+    // Total number of particles remaining in each generation
     std::vector<unsigned int> _generation_population;
+    // Population history by time step. Only store a certain number of time steps
+    std::vector<unsigned int> _population_history;
+    // Log history every n time steps. This will grow to keep the number of history
+    // values bounded
+    unsigned int _history_resolution = 1;
+    unsigned int _time_step          = 0;
 
     MaterialLibrary _materials;
     Mesh _mesh;
@@ -140,4 +153,6 @@ private:
     unsigned int _n_fission = 0;
     unsigned int _n_scatter = 0;
     unsigned int _n_leak    = 0;
+
+    void _resample_population();
 };
