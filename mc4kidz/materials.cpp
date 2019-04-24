@@ -20,23 +20,23 @@ Material::Material(const std::string &name, const std::vector<float> &abs,
     std::vector<float> outscatter(ng, 0.0);
     for (int from_g = 0; from_g < ng; ++from_g) {
         for (int to_g = 0; to_g < ng; ++to_g) {
-            xssc(to_g, from_g) = scat[to_g][from_g];
+            xssc(to_g, from_g)        = scat[to_g][from_g];
             scat_by_col[from_g][to_g] = scat[to_g][from_g];
             outscatter[from_g] += xssc(to_g, from_g);
         }
     }
 
-	// Get the outscatter CDF for each group
+    // Get the outscatter CDF for each group
     scatter_cdf.reserve(ng);
     for (int from_g = 0; from_g < ng; ++from_g) {
         scatter_cdf.push_back(ScatterCDF(scat_by_col[from_g]));
-	}
+    }
 
     for (int ig = 0; ig < ng; ++ig) {
         xstr[ig] = xsab[ig] + outscatter[ig];
     }
 
-	// Now that we have all of the interesting stuff, calculate the interaction CDF
+    // Now that we have all of the interesting stuff, calculate the interaction CDF
     interaction_cdf.reserve(ng);
     for (int ig = 0; ig < ng; ++ig) {
         interaction_cdf.push_back(
@@ -113,7 +113,7 @@ MaterialLibrary C5G7()
         library.add_material(moderator);
     }
 
-	{
+    {
         std::vector<float> abs{1.0E+07f, 1.0E+07f, 1.0E+07f, 1.0E+07f,
                                1.0E+07f, 1.0E+07f, 1.0E+07f};
         std::vector<float> nfis{
@@ -146,9 +146,9 @@ MaterialLibrary C5G7()
         library.add_material(moderator);
     }
 
-	{
+    {
         std::vector<float> abs{0.0E+00f, 0.0E+00f, 0.0E+00f, 0.0E+00f,
-                                   0.0E+00f, 0.0E+00f, 0.0E+00f};
+                               0.0E+00f, 0.0E+00f, 0.0E+00f};
         std::vector<float> nfis{
             0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
         };
@@ -176,6 +176,40 @@ MaterialLibrary C5G7()
              0.00000E+00f, 0.00000E+00f},
         };
         Material moderator(std::string("Void"), abs, nfis, fis, chi, scat);
+        library.add_material(moderator);
+    }
+
+    // Control
+    {
+        std::vector<float> abs{1.70490E-03, 8.36224E-03, 8.37901E-02, 3.97797E-01,
+                               6.98763E-01, 9.29508E-01, 1.17836E+00};
+        std::vector<float> nfis{
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        };
+        std::vector<float> fis{
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        };
+        std::vector<float> chi{
+            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+        };
+
+        std::vector<std::vector<float>> scat{
+            {1.70563E-01, 0.00000E+00, 0.00000E+00, 0.00000E+00, 0.00000E+00,
+             0.00000E+00, 0.00000E+00},
+            {4.44012E-02, 4.71050E-01, 0.00000E+00, 0.00000E+00, 0.00000E+00,
+             0.00000E+00, 0.00000E+00},
+            {9.83670E-05, 6.85480E-04, 8.01859E-01, 0.00000E+00, 0.00000E+00,
+             0.00000E+00, 0.00000E+00},
+            {1.27786E-07, 3.91395E-10, 7.20132E-04, 5.70752E-01, 6.55562E-05,
+             0.00000E+00, 0.00000E+00},
+            {0.00000E+00, 0.00000E+00, 0.00000E+00, 1.46015E-03, 2.07838E-01,
+             1.02427E-03, 0.00000E+00},
+            {0.00000E+00, 0.00000E+00, 0.00000E+00, 0.00000E+00, 3.81486E-03,
+             2.02465E-01, 3.53043E-03},
+            {0.00000E+00, 0.00000E+00, 0.00000E+00, 0.00000E+00, 3.69760E-09,
+             4.75290E-03, 6.58597E-01}};
+
+        Material moderator(std::string("Control"), abs, nfis, fis, chi, scat);
         library.add_material(moderator);
     }
 
