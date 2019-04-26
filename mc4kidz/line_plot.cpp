@@ -36,11 +36,11 @@ void LinePlot::draw() const
     glEnd();
 
     glBegin(GL_LINE_STRIP);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     int i = 0;
-    for (auto val : data) {
-        glVertex2f(dx * i - 1.0f, scale * val - 1.0f);
-        ++i;
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    for (size_t i = 0; i < data.size(); ++i) {
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        glVertex2f(dx * i - 1.0f, scale * data[i] - 1.0f);
     }
     glEnd();
 
