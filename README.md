@@ -36,7 +36,12 @@ When starting the program, the simulation should be paused; see below for how to
 Right now, the simulation will always start with some number of particles, emitted isotropically from the center of the domain (the number changes with my whims, and at some point might become configurable).
 They start in the slowest energy group, and are red, which indicates that they are in the zero-th generation.
 As fissions occur, the daughter neutrons will be orange, then yellow, thought GOYGBIV, back to red again.
+
 Since the range of particle velocities in the real world is so large that it would be impossible to discern motion in both fission neutrons and thermal neutrons, the particle velocity is super approximate.
+
+The particle tracking in MC 4 Kidz!, and especially the time-dependent behavior is not accurate or physical.
+Particle motion is constrained to the 2-D plane, and so particles tend to move "farther" than they ought to.
+This is done for simplicity, and because accuracy isn't even close to a priority.
 
 The controls for MC 4 Kidz! are admittedly esoteric, but pretty simple:
  - `r`: Restart the simulation
