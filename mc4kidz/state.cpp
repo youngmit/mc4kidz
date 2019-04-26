@@ -168,7 +168,7 @@ void State::draw() const
         sstream << "Generation " << gen << ": " << _generation_born[gen] << " ("
                 << _generation_population[gen] << ")";
         pop_str = sstream.str();
-        glRasterPos2f(8.0, 9.5f - 0.5f * gen);
+        glRasterPos2f(10.2f, 9.5f - 0.5f * gen);
         glutBitmapString(GLUT_BITMAP_HELVETICA_18,
                          (const unsigned char *)pop_str.c_str());
     }
