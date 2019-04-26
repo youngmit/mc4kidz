@@ -68,7 +68,7 @@ public:
         return _source.has_value();
     }
 
-    void State::set_view(Ortho2D view)
+    void set_view(Ortho2D view)
     {
         _projection_matrix = view;
     }
