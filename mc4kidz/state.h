@@ -99,6 +99,8 @@ public:
     }
 
 private:
+    Particle _new_particle(Vec2 location) const;
+
     const Color PARTICLE_DEST_COLOR{0.0f, 0.0f, 1.0f, 1.0f};
     const Color PIN_COLOR{0.3f, 0.0f, 0.0f, 1.0f};
     const Color MODERATOR_COLOR{0.0f, 0.1f, 0.3f, 1.0f};
@@ -133,8 +135,8 @@ private:
     BoundaryCondition _bc = BoundaryCondition::VACUUM;
 
     // RNG stuff
-    std::default_random_engine _random;
-    std::uniform_real_distribution<float> _angle_distribution;
+    mutable std::default_random_engine _random;
+    mutable std::uniform_real_distribution<float> _angle_distribution;
     std::uniform_real_distribution<float> _unit_distribution;
 
     // Drawing settings

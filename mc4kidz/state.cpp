@@ -94,11 +94,7 @@ void State::reset()
     _generation_population.push_back(n_starting);
 
     for (unsigned int i = 0; i < n_starting; ++i) {
-        float angle = _angle_distribution(_random);
-        Vec2 direction{sin(angle), cos(angle)};
-        Particle p(Vec2{5.f, 5.f}, direction);
-        p.material = _mesh.get_material(p.location);
-        p.e_group  = 6;
+        Particle p = _new_particle(Vec2{5.0f, 5.0f});
         _mesh.transport_particle(p, _random);
         _particles.push_back(p);
     }
@@ -195,21 +191,21 @@ void State::interact(size_t id)
         float angle  = _angle_distribution(_random);
         float scat_r = _unit_distribution(_random);
         p.e_group    = mat->scatter_cdf[p.e_group].sample(scat_r);
-        p.direction  = {sin(angle), cos(angle)};
+        p.direction  = {std::sin(angle), std::cos(angle)};
         _mesh.transport_particle(p, _random);
         return;
     }
     if (interaction == Interaction::FISSION) {
         _n_fission++;
-        p.alive        = false;
+        p.alive = false;
         _generation_population[p.generation] -= 1;
         Particle old_p = p;
         float new_r    = _unit_distribution(_random);
         int nu         = new_r > 0.5 ? 3 : 2;
         for (int i = 0; i < nu; ++i) {
-            float angle = _angle_distribution(_random);
-            Vec2 direction{sin(angle), cos(angle)};
-            Particle p2(old_p.location, direction);
+            Particle p2 = _new_particle(old_p.location);
+            // TODO: Actually sample chi distribution
+            p2.e_group = 0;
             p2.generation = old_p.generation + 1;
             if (p2.generation > _generation_born.size() - 1) {
                 _generation_born.push_back(0);
@@ -238,11 +234,7 @@ void State::tic(bool force)
     if (_source) {
         Vec2 location = _source.value();
 
-        float angle = _angle_distribution(_random);
-        Vec2 direction{sin(angle), cos(angle)};
-        Particle p(location, direction);
-        p.material = _mesh.get_material(p.location);
-        p.e_group  = 6;
+        Particle p = _new_particle(location);
         _generation_born[0]++;
         _generation_population[0]++;
         _mesh.transport_particle(p, _random);
@@ -361,4 +353,15 @@ void State::cycle_shape(float x, float y)
     resample();
 
     return;
+}
+
+Particle State::_new_particle(Vec2 location) const
+{
+    float angle = _angle_distribution(_random);
+    Vec2 direction{std::sin(angle), std::cos(angle)};
+    Particle p(location, direction);
+    p.material = _mesh.get_material(p.location);
+    p.e_group  = 6;
+    
+    return p;
 }
