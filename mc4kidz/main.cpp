@@ -113,7 +113,6 @@ void mouse(int button, int button_state, int x, int y)
 
     float world_x = (float)x / scale - WORLD_MARGIN;
     float world_y = (float)(window_height - y) / scale - WORLD_MARGIN;
-    std::cout << button_state << " " << world_x << ", " << world_y << "\n";
 
     if (button == GLUT_RIGHT_BUTTON && button_state == GLUT_DOWN) {
         state->cycle_shape(world_x, world_y);

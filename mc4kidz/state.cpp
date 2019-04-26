@@ -353,7 +353,7 @@ void State::cycle_shape(float x, float y)
     } else if (mat == &_materials.get_by_name("UO2")) {
         auto [new_c, new_mat] = _pin_types[PinType::BLACK];
         _mesh.set_color_material_at(location, new_c, new_mat);
-    } else if (mat == &_materials.get_by_name("Black")) {
+    } else if (mat == &_materials.get_by_name("Control")) {
         auto [new_c, new_mat] = _pin_types[PinType::MODERATOR];
         _mesh.set_color_material_at(location, new_c, new_mat);
     }
