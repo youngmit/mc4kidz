@@ -87,6 +87,9 @@ void key(unsigned char key, int x, int y)
         state->toggle_labels();
         glutPostRedisplay();
         break;
+    case 'c':
+        state->cycle_all();
+        break;
     case ' ':
         state->tic(true);
         glutPostRedisplay();

@@ -27,9 +27,8 @@ public:
     {
         auto i_reg = find_region(location);
         if (!i_reg) {
-            return std::nullopt;
+            return std::make_tuple(_background, _inter_mat);
         }
-        std::cout << i_reg.value() << "\n";
         return std::make_tuple(_shapes[i_reg.value()]->color,
                                _materials[i_reg.value()]);
     }
@@ -40,8 +39,21 @@ public:
         if (i_reg) {
             _shapes[i_reg.value()]->color = c;
             _materials[i_reg.value()]     = mat;
+        } else {
+            _inter_mat  = mat;
+            _background = c;
         }
         return;
+    }
+
+    void set_color_material_all_shapes(Color c, const Material *mat)
+    {
+        for (auto &shape : _shapes) {
+            shape->color = c;
+        }
+        for (auto &material : _materials) {
+            material = mat;
+        }
     }
 
     void draw() const;

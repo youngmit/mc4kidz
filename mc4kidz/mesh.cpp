@@ -77,7 +77,7 @@ void Mesh::transport_particle(Particle &particle,
 
             // We know we are crossing a surface, so we are either entering the
             // coincident shape or exiting.
-            if (!i_reg) {
+            if (!i_reg && surface_i < _shapes.size()) {
                 // We __were__ ouside of the surface. now inside
                 mat             = _materials[surface_i];
                 i_reg           = surface_i;

@@ -14,9 +14,11 @@
 #include "shapes.h"
 #include "view.h"
 
+#undef VOID
+
 enum class BoundaryCondition : uint8_t { VACUUM, REFLECTIVE };
 
-enum class PinType : uint8_t { FUEL, MODERATOR, BLACK };
+enum class PinType : uint8_t { FUEL, MODERATOR, BLACK, VOID };
 
 class State {
 public:
@@ -75,6 +77,8 @@ public:
 
     // Cycle the shape in the mesh from one to the next in a collection
     void cycle_shape(float x, float y);
+
+	void cycle_all();
 
     // Sample a particle interaction. Return whether the particle survived.
     void interact(size_t id);
@@ -155,6 +159,8 @@ private:
     unsigned int _n_fission = 0;
     unsigned int _n_scatter = 0;
     unsigned int _n_leak    = 0;
+
+	PinType _current_pin_type = PinType::FUEL;
 
     void _resample_population();
 };

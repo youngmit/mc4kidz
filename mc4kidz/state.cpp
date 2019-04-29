@@ -39,14 +39,15 @@ State::State()
 {
     Color gray{0.3f, 0.3f, 0.3f, 1.0f};
     Color fuel{0.4f, 0.0f, 0.0f, 1.0f};
-    Color white{1.0f, 10.f, 10.f, 10.f};
-    Color black{0.0f, 0.0f, 0.0f, 0.0f};
+    Color white{1.0f, 1.0f, 1.0f, 1.0f};
+    Color black{0.0f, 0.0f, 0.0f, 1.0f};
 
     _pin_types[PinType::FUEL] = std::make_tuple(fuel, &_materials.get_by_name("UO2"));
     _pin_types[PinType::MODERATOR] =
         std::make_tuple(MODERATOR_COLOR, &_materials.get_by_name("Moderator"));
     _pin_types[PinType::BLACK] =
         std::make_tuple(gray, &_materials.get_by_name("Control"));
+    _pin_types[PinType::VOID] = std::make_tuple(black, &_materials.get_by_name("Void"));
 
     _boundary.outline_color = white;
 
@@ -56,9 +57,8 @@ State::State()
                                              : &_materials.get_by_name("UO2");
             auto color = ix == iy ? fuel : fuel;
             _mesh.add_shape(
-                std::make_unique<Circle>(color,
-                                         Vec2{0.5f * PIN_PITCH + ix * PIN_PITCH,
-                                              0.5f * PIN_PITCH + iy * PIN_PITCH},
+                std::make_unique<Circle>(color, Vec2{0.5f * PIN_PITCH + ix * PIN_PITCH,
+                                                     0.5f * PIN_PITCH + iy * PIN_PITCH},
                                          PIN_RADIUS),
                 mat);
         }
@@ -205,7 +205,7 @@ void State::interact(size_t id)
         for (int i = 0; i < nu; ++i) {
             Particle p2 = _new_particle(old_p.location);
             // TODO: Actually sample chi distribution
-            p2.e_group = 0;
+            p2.e_group    = 0;
             p2.generation = old_p.generation + 1;
             if (p2.generation > _generation_born.size() - 1) {
                 _generation_born.push_back(0);
@@ -338,21 +338,40 @@ void State::cycle_shape(float x, float y)
         return;
     }
 
-    auto [color, mat] = result.value();
+    auto[color, mat] = result.value();
+    PinType new_type;
     if (mat == &_materials.get_by_name("Moderator")) {
-        auto [new_c, new_mat] = _pin_types[PinType::FUEL];
-        _mesh.set_color_material_at(location, new_c, new_mat);
+        new_type = PinType::FUEL;
     } else if (mat == &_materials.get_by_name("UO2")) {
-        auto [new_c, new_mat] = _pin_types[PinType::BLACK];
-        _mesh.set_color_material_at(location, new_c, new_mat);
+        new_type = PinType::BLACK;
     } else if (mat == &_materials.get_by_name("Control")) {
-        auto [new_c, new_mat] = _pin_types[PinType::MODERATOR];
-        _mesh.set_color_material_at(location, new_c, new_mat);
+        new_type = PinType::VOID;
+    } else if (mat == &_materials.get_by_name("Void")) {
+        new_type = PinType::MODERATOR;
     }
+    auto[new_c, new_mat] = _pin_types[new_type];
+    _mesh.set_color_material_at(location, new_c, new_mat);
 
     resample();
 
     return;
+}
+
+void State::cycle_all()
+{
+    PinType new_type;
+    if (_current_pin_type == PinType::MODERATOR) {
+        new_type = PinType::FUEL;
+    } else if (_current_pin_type == PinType::FUEL) {
+        new_type = PinType::BLACK;
+    } else if (_current_pin_type == PinType::BLACK) {
+        new_type = PinType::VOID;
+    } else if (_current_pin_type == PinType::VOID) {
+        new_type = PinType::MODERATOR;
+    }
+    auto[new_c, new_mat] = _pin_types[new_type];
+    _mesh.set_color_material_all_shapes(new_c, new_mat);
+    _current_pin_type = new_type;
 }
 
 Particle State::_new_particle(Vec2 location) const
@@ -362,6 +381,6 @@ Particle State::_new_particle(Vec2 location) const
     Particle p(location, direction);
     p.material = _mesh.get_material(p.location);
     p.e_group  = 6;
-    
+
     return p;
 }
