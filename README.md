@@ -49,7 +49,7 @@ The controls for MC 4 Kidz! are admittedly esoteric, but pretty simple:
  - `space`: Advance the simulation by one frame when paused
  - `b`: Toggle the reflective boundary condition
  - `l`: Toggle particle labels (useful for debugging)
- - `w`: Tobble particle waypoints (useful for debugging, but also fun to look at when there arent many particles)
+ - `w`: Toggle particle waypoints (useful for debugging, but also fun to look at when there arent many particles)
  - `c`: Cycle all pin materials in the lattice
  - Left mouse button: Emit thermal neutrons from the mouse location
  - Right mouse button: Cycle through materials for the region under the cursor
