@@ -11,21 +11,24 @@
 #include "materials.h"
 #include "mesh.h"
 #include "particle.h"
+#include "pin_types.h"
+#include "playbook.h"
 #include "shapes.h"
 #include "view.h"
 
-#undef VOID
-
 enum class BoundaryCondition : uint8_t { VACUUM, REFLECTIVE };
 
-enum class PinType : uint8_t { FUEL, MODERATOR, BLACK, VOID };
 
 class State {
 public:
     State();
 
-    // Wipe out any existing particles and spawn a new batch
-    void reset();
+    // Wipe out any existing particles and spawn a new batch.
+    // A "soft" reset is performed by automated controls, and doesnt reset the parts of
+    // the
+    // state that track progress through a Playbook. A "hard" reset happens at the very
+    // beginning to get things going and by the user.
+    void reset(bool hard = true);
 
     // Re-transport all particles; we do this when the system changes
     void resample();
@@ -35,6 +38,22 @@ public:
     void tic(bool force = false);
 
     void draw() const;
+
+    void add_particles(Vec2 location, int n)
+    {
+        for (int i = 0; i < n; ++i) {
+            Particle p = _new_particle(location);
+            _mesh.transport_particle(p, _random);
+            _particles.push_back(p);
+        }
+    }
+
+    // Associate a playbook to automate controls
+    void set_playbook(std::unique_ptr<Playbook> playbook)
+    {
+        _playbook = std::move(playbook);
+        reset();
+    }
 
     // Switch to the next boundary condition type
     void toggle_boundary_condition();
@@ -75,10 +94,12 @@ public:
         _projection_matrix = view;
     }
 
+	void set_material_at(Vec2 location, PinType material);
+
     // Cycle the shape in the mesh from one to the next in a collection
     void cycle_shape(float x, float y);
 
-	void cycle_all();
+    void cycle_all();
 
     // Sample a particle interaction. Return whether the particle survived.
     void interact(size_t id);
@@ -108,8 +129,8 @@ private:
     const Color PARTICLE_DEST_COLOR{0.0f, 0.0f, 1.0f, 1.0f};
     const Color PIN_COLOR{0.3f, 0.0f, 0.0f, 1.0f};
     const Color MODERATOR_COLOR{0.0f, 0.1f, 0.3f, 1.0f};
-    const int NPINS_X         = 10;
-    const int NPINS_Y         = 10;
+    const int NPINS_X         = 17;
+    const int NPINS_Y         = 17;
     const float PIN_RADIUS    = 0.4f;
     const float PIN_PITCH     = 1.0f;
     const size_t MAX_POP_HIST = 1000;
@@ -132,6 +153,8 @@ private:
     // values bounded
     unsigned int _history_resolution = 1;
     unsigned int _time_step          = 0;
+    size_t _since_last_command       = 0;
+    size_t _next_command             = 0;
 
     MaterialLibrary _materials;
     Mesh _mesh;
@@ -149,7 +172,11 @@ private:
     bool _paused         = true;
     bool _labels         = false;
 
+    // Optional playbook
+    std::unique_ptr<Playbook> _playbook;
+
     std::unordered_map<PinType, std::tuple<Color, const Material *>> _pin_types;
+
     std::optional<Vec2> _source = std::nullopt;
 
     Ortho2D _projection_matrix;
@@ -160,7 +187,7 @@ private:
     unsigned int _n_scatter = 0;
     unsigned int _n_leak    = 0;
 
-	PinType _current_pin_type = PinType::FUEL;
+    PinType _current_pin_type = PinType::FUEL;
 
     void _resample_population();
 };

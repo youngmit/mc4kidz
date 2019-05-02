@@ -1,0 +1,41 @@
+100 noop
+0 set_material 2.5 5.5 control
+0 set_material 2.5 8.5 control
+0 set_material 2.5 11.5 control
+
+0 set_material 3.5 3.5 control
+0 set_material 3.5 13.5 control
+
+0 set_material 5.5 2.5 control
+0 set_material 5.5 5.5 control
+0 set_material 5.5 8.5 control
+0 set_material 5.5 11.5 control
+0 set_material 5.5 14.5 control
+
+0 set_material 8.5 2.5 control
+0 set_material 8.5 5.5 control
+0 toggle_material 8.5 8.5
+0 set_material 8.5 11.5 control
+0 set_material 8.5 14.5 control
+
+0 set_material 11.5 2.5 control
+0 set_material 11.5 5.5 control
+0 set_material 11.5 8.5 control
+0 set_material 11.5 11.5 control
+0 set_material 11.5 14.5 control
+
+0 set_material 13.5 3.5 control
+0 set_material 13.5 13.5 control
+
+0 set_material 14.5 5.5 control
+0 set_material 14.5 8.5 control
+0 set_material 14.5 11.5 control
+
+100 add_particles 13.0 13.0 1000
+500 add_particles 5.0 13.0 1000
+
+0 halt
+#100 reset
+#100 reset
+#100 toggle_boundary
+#100 set_material 5.0 7.5

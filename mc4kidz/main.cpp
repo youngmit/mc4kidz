@@ -12,13 +12,14 @@
 #include "info_pane.h"
 #include "line_plot.h"
 #include "pie_chart.h"
+#include "playbook.h"
 #include "shapes.h"
 #include "simple_structs.h"
 #include "state.h"
 #include "view.h"
 
-static const float WORLD_WIDTH   = 10.0f;
-static const float WORLD_HEIGHT  = 10.0f;
+static const float WORLD_WIDTH   = 17.0f;
+static const float WORLD_HEIGHT  = 17.0f;
 static const float WORLD_MARGIN  = 0.1f;
 static const int INFO_PANE_WIDTH = 150;
 
@@ -160,11 +161,17 @@ int main(int argc, char *argv[])
 {
     std::cout << "Here we go!\n";
 
+
     state     = std::make_unique<State>();
     info_pane = std::make_unique<InfoPane>(200, 10);
     info_pane->add_info(std::make_unique<InteractionPieChart>(state.get()));
     info_pane->add_info(std::make_unique<SpectrumHistogram>(state.get()));
     info_pane->add_info(std::make_unique<PopulationLinePlot>(state.get()));
+
+	if (argc > 1) {
+        std::string playbook_file = argv[1];
+        state->set_playbook(std::make_unique<Playbook>(playbook_file));
+    }
 
     glutInit(&argc, argv);
     glutInitWindowSize(512, 512);

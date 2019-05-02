@@ -13,7 +13,10 @@
 #include "GL/gl.h"
 
 #include "materials.h"
+#include "pin_types.h"
 #include "shapes.h"
+
+#undef VOID
 
 std::vector<Color> make_particle_colors()
 {
@@ -34,7 +37,8 @@ State::State()
       _materials(C5G7()),
       _mesh(NPINS_X * PIN_PITCH, NPINS_Y * PIN_PITCH,
             &_materials.get_by_name("Moderator"), MODERATOR_COLOR),
-      _boundary(Color{0.0f, 0.0f, 0.0f, 0.0f}, Vec2{0.0f, 0.0f}, Vec2{10.f, 10.f}),
+      _boundary(Color{0.0f, 0.0f, 0.0f, 0.0f}, Vec2{0.0f, 0.0f},
+                Vec2{_mesh.get_width(), _mesh.get_height()}),
       _angle_distribution(0, 6.28318530718f)
 {
     Color gray{0.3f, 0.3f, 0.3f, 1.0f};
@@ -72,7 +76,7 @@ State::State()
     return;
 }
 
-void State::reset()
+void State::reset(bool hard)
 {
     _particles.clear();
     _process_queue.clear();
@@ -88,7 +92,7 @@ void State::reset()
     _n_scatter = 0;
     _n_leak    = 0;
 
-    unsigned int n_starting = 100;
+    unsigned int n_starting = 1000;
 
     _generation_born.push_back(n_starting);
     _generation_population.push_back(n_starting);
@@ -97,6 +101,113 @@ void State::reset()
         Particle p = _new_particle(Vec2{5.0f, 5.0f});
         _mesh.transport_particle(p, _random);
         _particles.push_back(p);
+    }
+
+    if (hard) {
+        _since_last_command = 0;
+
+        if (_playbook) {
+            _playbook->reset();
+            _next_command = _playbook->tics_to_next();
+        } else {
+            _next_command = std::numeric_limits<size_t>::max();
+        }
+    }
+}
+
+void State::tic(bool force)
+{
+    if (_paused ^ force) {
+        return;
+    }
+
+    if (_since_last_command == _next_command) {
+        _since_last_command = 0;
+        if (_playbook) {
+            _next_command = _playbook->execute_next(this);
+        } else {
+            _next_command = std::numeric_limits<size_t>::max();
+        }
+    }
+
+    _time_step++;
+    _since_last_command++;
+
+    if (_source) {
+        Vec2 location = _source.value();
+
+        Particle p = _new_particle(location);
+        _generation_born[0]++;
+        _generation_population[0]++;
+        _mesh.transport_particle(p, _random);
+        _particles.push_back(p);
+    }
+
+    _process_queue.clear();
+    size_t id = 0;
+    for (auto &p : _particles) {
+        bool process = p.tic(1.0f);
+
+        // Handle the boundary condition
+        if (p.location.x < 0.0f || p.location.x > _mesh.get_width() ||
+            p.location.y < 0.0f || p.location.y > _mesh.get_height()) {
+            if (_bc == BoundaryCondition::VACUUM) {
+                p.alive = false;
+                process = false;
+                _n_leak++;
+                _generation_population[p.generation]--;
+                continue;
+            }
+            if (_bc == BoundaryCondition::REFLECTIVE) {
+                if (p.location.x < 0.0f) {
+                    p.direction.x = -p.direction.x;
+                    p.location.x  = 0.0f;
+                }
+                if (p.location.x > _mesh.get_width()) {
+                    p.direction.x = -p.direction.x;
+                    p.location.x  = _mesh.get_width();
+                }
+                if (p.location.y < 0.0f) {
+                    p.direction.y = -p.direction.y;
+                    p.location.y  = 0.0f;
+                }
+                if (p.location.y > _mesh.get_height()) {
+                    p.direction.y = -p.direction.y;
+                    p.location.y  = _mesh.get_height();
+                }
+                _mesh.transport_particle(p, _random);
+            }
+        }
+
+        if (process) {
+            _process_queue.push_back(id);
+        }
+
+        ++id;
+    }
+
+    for (const auto id : _process_queue) {
+        interact(id);
+    }
+
+    _process_queue.clear();
+
+    // remove dead particles
+    auto new_end = std::remove_if(_particles.begin(), _particles.end(),
+                                  [](Particle &p) { return !p.alive; });
+    _particles.erase(new_end, _particles.end());
+
+    if (_time_step % _history_resolution == 0) {
+        if (_population_history.size() == MAX_POP_HIST) {
+            _resample_population();
+        }
+        _population_history.push_back(_particles.size());
+    }
+    assert(_particles.size() == std::accumulate(_generation_population.begin(),
+                                                _generation_population.end(), 0));
+
+    if (_time_step > 10000) {
+        toggle_pause();
     }
 }
 
@@ -159,12 +270,19 @@ void State::draw() const
     glRasterPos2f(1.0f, 1.5f);
     glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char *)mdtc_str.c_str());
 
+    sstream.str("");
+
+    sstream << "Time step: " << _time_step;
+    auto ts_str = sstream.str();
+    glRasterPos2f(1.0f, 2.0f);
+    glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char *)ts_str.c_str());
+
     for (size_t gen = 0; gen < _generation_born.size(); ++gen) {
         sstream.str("");
         sstream << "Generation " << gen << ": " << _generation_born[gen] << " ("
                 << _generation_population[gen] << ")";
         pop_str = sstream.str();
-        glRasterPos2f(10.2f, 9.5f - 0.5f * gen);
+        glRasterPos2f(_mesh.get_width() + 0.2f, _mesh.get_height() - 0.5f - 0.5f * gen);
         glutBitmapString(GLUT_BITMAP_HELVETICA_18,
                          (const unsigned char *)pop_str.c_str());
     }
@@ -223,88 +341,6 @@ void State::interact(size_t id)
     return;
 }
 
-void State::tic(bool force)
-{
-    if (_paused ^ force) {
-        return;
-    }
-
-    _time_step++;
-
-    if (_source) {
-        Vec2 location = _source.value();
-
-        Particle p = _new_particle(location);
-        _generation_born[0]++;
-        _generation_population[0]++;
-        _mesh.transport_particle(p, _random);
-        _particles.push_back(p);
-    }
-
-    _process_queue.clear();
-    size_t id = 0;
-    for (auto &p : _particles) {
-        bool process = p.tic(1.0f);
-
-        // Handle the boundary condition
-        if (p.location.x < 0.0f || p.location.x > 10.0f || p.location.y < 0.0f ||
-            p.location.y > 10.0f) {
-            if (_bc == BoundaryCondition::VACUUM) {
-                p.alive = false;
-                process = false;
-                _n_leak++;
-                _generation_population[p.generation]--;
-                continue;
-            }
-            if (_bc == BoundaryCondition::REFLECTIVE) {
-                if (p.location.x < 0.0f) {
-                    p.direction.x = -p.direction.x;
-                    p.location.x  = 0.0f;
-                }
-                if (p.location.x > 10.0f) {
-                    p.direction.x = -p.direction.x;
-                    p.location.x  = 10.0f;
-                }
-                if (p.location.y < 0.0f) {
-                    p.direction.y = -p.direction.y;
-                    p.location.y  = 0.0f;
-                }
-                if (p.location.y > 10.0f) {
-                    p.direction.y = -p.direction.y;
-                    p.location.y  = 10.0f;
-                }
-                _mesh.transport_particle(p, _random);
-            }
-        }
-
-        if (process) {
-            _process_queue.push_back(id);
-        }
-
-        ++id;
-    }
-
-    for (const auto id : _process_queue) {
-        interact(id);
-    }
-
-    _process_queue.clear();
-
-    // remove dead particles
-    auto new_end = std::remove_if(_particles.begin(), _particles.end(),
-                                  [](Particle &p) { return !p.alive; });
-    _particles.erase(new_end, _particles.end());
-
-    if (_time_step % _history_resolution == 0) {
-        if (_population_history.size() == MAX_POP_HIST) {
-            _resample_population();
-        }
-        _population_history.push_back(_particles.size());
-    }
-    assert(_particles.size() == std::accumulate(_generation_population.begin(),
-                                                _generation_population.end(), 0));
-}
-
 // Double the history resolution and discard every other population sample.
 // Shift remaining values down and resize the vector
 void State::_resample_population()
@@ -328,6 +364,13 @@ void State::toggle_boundary_condition()
         _bc = BoundaryCondition::VACUUM;
         break;
     }
+}
+
+void State::set_material_at(Vec2 location, PinType material)
+{
+    auto[new_c, new_mat] = _pin_types[material];
+
+    _mesh.set_color_material_at(location, new_c, new_mat);
 }
 
 void State::cycle_shape(float x, float y)
@@ -372,6 +415,8 @@ void State::cycle_all()
     auto[new_c, new_mat] = _pin_types[new_type];
     _mesh.set_color_material_all_shapes(new_c, new_mat);
     _current_pin_type = new_type;
+
+	resample();
 }
 
 Particle State::_new_particle(Vec2 location) const

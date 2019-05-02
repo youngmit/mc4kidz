@@ -82,6 +82,16 @@ public:
 
     std::optional<size_t> find_region(Vec2 location) const;
 
+    float get_width() const
+    {
+        return _width;
+    }
+
+    float get_height() const
+    {
+        return _height;
+    }
+
 private:
     float _width;
     float _height;

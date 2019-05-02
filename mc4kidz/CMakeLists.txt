@@ -1,5 +1,5 @@
 ﻿# set(CMAKE_WIN32_EXECUTABLE true)
-add_library (libmc4kidz "state.cpp;shapes.cpp;materials.cpp;particle.cpp;mesh.cpp;pie_chart.cpp;line_plot.cpp;histogram.cpp;info_pane.cpp")
+add_library (libmc4kidz "state.cpp;shapes.cpp;materials.cpp;particle.cpp;mesh.cpp;pie_chart.cpp;line_plot.cpp;histogram.cpp;info_pane.cpp;playbook.cpp")
 target_include_directories(libmc4kidz PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 message(STATUS "libs ${wxWidgets_LIBRARIES}")
