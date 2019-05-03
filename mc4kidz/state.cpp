@@ -181,7 +181,9 @@ void State::tic(bool force)
 
         if (process) {
             _process_queue.push_back(id);
-        }
+        } else {
+            _back_particles.push_back(p);
+		}
 
         ++id;
     }
@@ -190,12 +192,8 @@ void State::tic(bool force)
         interact(id);
     }
 
-    _process_queue.clear();
-
-    // remove dead particles
-    auto new_end = std::remove_if(_particles.begin(), _particles.end(),
-                                  [](Particle &p) { return !p.alive; });
-    _particles.erase(new_end, _particles.end());
+    _particles.swap(_back_particles);
+    _back_particles.clear();
 
     if (_time_step % _history_resolution == 0) {
         if (_population_history.size() == MAX_POP_HIST) {
@@ -205,7 +203,6 @@ void State::tic(bool force)
     }
     assert(_particles.size() == std::accumulate(_generation_population.begin(),
                                                 _generation_population.end(), 0));
-
 }
 
 void State::resample()
@@ -311,6 +308,7 @@ void State::interact(size_t id)
         p.e_group    = mat->scatter_cdf[p.e_group].sample(scat_r);
         p.direction  = {std::sin(angle), std::cos(angle)};
         _mesh.transport_particle(p, _random);
+        _back_particles.push_back(p);
         return;
     }
     if (interaction == Interaction::FISSION) {
@@ -333,7 +331,7 @@ void State::interact(size_t id)
             _generation_population[p2.generation] += 1;
             p2.material = mat;
             _mesh.transport_particle(p2, _random);
-            _particles.push_back(p2);
+            _back_particles.push_back(p2);
         }
         return;
     }
@@ -416,7 +414,7 @@ void State::cycle_all()
     _mesh.set_color_material_all_shapes(new_c, new_mat);
     _current_pin_type = new_type;
 
-	resample();
+    resample();
 }
 
 Particle State::_new_particle(Vec2 location) const

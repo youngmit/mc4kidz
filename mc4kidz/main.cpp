@@ -204,6 +204,7 @@ int main(int argc, char *argv[])
     glutTimerFunc(20, timer, 0);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glPointSize(1.5f);
     glutMainLoop();
     return 0;
 }

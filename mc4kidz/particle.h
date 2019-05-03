@@ -10,22 +10,23 @@ extern std::uniform_real_distribution<float> uniform;
 
 struct Particle {
 public:
-    Particle(Vec2 l, Vec2 v)
-        : location(l), direction(v), alive(true)
+    Particle(Vec2 l, Vec2 v) : location(l), direction(v), alive(true)
     {
         return;
     }
 
     bool tic(float t)
     {
-        float delta = base_speed/(float)(e_group+1) * t;
-        bool done  = false;
+        float delta = base_speed / (float)(e_group + 1) * t;
+        bool done   = false;
         if (delta > distance) {
             delta = distance;
+            distance = 0.0;
             done  = true;
-		}
-		
-        distance -= delta;
+        } else {
+            distance -= delta;
+        }
+
         location += direction * delta;
 
         return done;
@@ -42,10 +43,10 @@ public:
     Vec2 direction;
     std::vector<Vec2> waypoints;
     static float base_speed;
-    float distance = 1.0f;
-    int e_group    = 0;
+    float distance          = 1.0f;
+    int e_group             = 0;
     unsigned int generation = 0;
-    bool alive     = true;
+    bool alive              = true;
 
     const Material *material = nullptr;
 };
