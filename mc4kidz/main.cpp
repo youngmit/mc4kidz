@@ -6,6 +6,7 @@
 #include <windows.h>
 #endif
 #include "GL/gl.h"
+#include "GL/freeglut.h"
 #include "GL/glut.h"
 
 #include "histogram.h"
@@ -26,6 +27,11 @@ static const int INFO_PANE_WIDTH = 150;
 std::unique_ptr<State> state;
 std::unique_ptr<InfoPane> info_pane;
 
+int frame = 0;
+int time  = 0;
+int time_base = 0;
+float fps     = 0.0;
+
 void display()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -38,6 +44,19 @@ void display()
 
     state->draw();
     info_pane->draw();
+
+	frame++;
+    time = glutGet(GLUT_ELAPSED_TIME);
+
+    if (time - time_base > 1000) {
+                fps = frame*1000.0/(time-time_base);
+                time_base = time;
+                frame    = 0;
+    }
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	glRasterPos2f(0.0f, 0.0f);
+    auto fps_str = std::to_string(fps);
+    glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char *)fps_str.c_str());
 
     glFlush();
 }
