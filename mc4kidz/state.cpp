@@ -206,9 +206,6 @@ void State::tic(bool force)
     assert(_particles.size() == std::accumulate(_generation_population.begin(),
                                                 _generation_population.end(), 0));
 
-    if (_time_step > 10000) {
-        toggle_pause();
-    }
 }
 
 void State::resample()
@@ -230,17 +227,20 @@ void State::draw() const
         _boundary.draw();
     }
 
+    glBegin(GL_POINTS);
     for (auto &p : _particles) {
-        Circle c(_particle_colors[p.generation % _particle_colors.size()], p.location,
-                 0.02f);
-        c.draw();
+        const auto &c = _particle_colors[p.generation % _particle_colors.size()];
+        glColor4f(c.r, c.g, c.b, c.a);
+        glVertex2f(p.location.x, p.location.y);
         if (_draw_waypoints) {
+            glColor4f(PARTICLE_DEST_COLOR.r, PARTICLE_DEST_COLOR.g,
+                      PARTICLE_DEST_COLOR.b, PARTICLE_DEST_COLOR.a);
             for (const auto waypoint : p.waypoints) {
-                c = Circle(PARTICLE_DEST_COLOR, waypoint, 0.02f);
-                c.draw();
+                glVertex2f(waypoint.x, waypoint.y);
             }
         }
     }
+    glEnd();
 
     if (_labels) {
         glColor3f(1.0f, 1.0f, 1.0f);
