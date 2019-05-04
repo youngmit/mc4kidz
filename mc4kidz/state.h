@@ -45,6 +45,8 @@ public:
             Particle p = _new_particle(location);
             _mesh.transport_particle(p, _random);
             _particles.push_back(p);
+            _generation_born[0]++;
+            _generation_population[0]++;
         }
     }
 

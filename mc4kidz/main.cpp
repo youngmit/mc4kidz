@@ -161,16 +161,17 @@ int main(int argc, char *argv[])
 {
     std::cout << "Here we go!\n";
 
-
     state     = std::make_unique<State>();
     info_pane = std::make_unique<InfoPane>(200, 10);
     info_pane->add_info(std::make_unique<InteractionPieChart>(state.get()));
     info_pane->add_info(std::make_unique<SpectrumHistogram>(state.get()));
     info_pane->add_info(std::make_unique<PopulationLinePlot>(state.get()));
 
-	if (argc > 1) {
+    if (argc > 1) {
         std::string playbook_file = argv[1];
         state->set_playbook(std::make_unique<Playbook>(playbook_file));
+    } else {
+        state->set_playbook(std::make_unique<Playbook>());
     }
 
     glutInit(&argc, argv);

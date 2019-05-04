@@ -92,16 +92,8 @@ void State::reset(bool hard)
     _n_scatter = 0;
     _n_leak    = 0;
 
-    unsigned int n_starting = 1000;
-
-    _generation_born.push_back(n_starting);
-    _generation_population.push_back(n_starting);
-
-    for (unsigned int i = 0; i < n_starting; ++i) {
-        Particle p = _new_particle(Vec2{5.0f, 5.0f});
-        _mesh.transport_particle(p, _random);
-        _particles.push_back(p);
-    }
+    _generation_born.push_back(0);
+    _generation_population.push_back(0);
 
     if (hard) {
         _since_last_command = 0;

@@ -1,3 +1,5 @@
+0 toggle_boundary
+
 100 noop
 0 set_material 2.5 5.5 control
 0 set_material 2.5 8.5 control
@@ -34,8 +36,8 @@
 100 add_particles 13.0 13.0 1000
 500 add_particles 5.0 13.0 1000
 
-0 halt
-#100 reset
+#0 halt
+200 reset
 #100 reset
 #100 toggle_boundary
 #100 set_material 5.0 7.5
