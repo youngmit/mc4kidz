@@ -50,7 +50,7 @@ State::State()
     _pin_types[PinType::MODERATOR] =
         std::make_tuple(MODERATOR_COLOR, &_materials.get_by_name("Moderator"));
     _pin_types[PinType::BLACK] =
-        std::make_tuple(gray, &_materials.get_by_name("Control"));
+        std::make_tuple(gray, &_materials.get_by_name("Control2"));
     _pin_types[PinType::VOID] = std::make_tuple(black, &_materials.get_by_name("Void"));
 
     _boundary.outline_color = white;
@@ -377,7 +377,7 @@ void State::cycle_shape(float x, float y)
         new_type = PinType::FUEL;
     } else if (mat == &_materials.get_by_name("UO2")) {
         new_type = PinType::BLACK;
-    } else if (mat == &_materials.get_by_name("Control")) {
+    } else if (mat == &_materials.get_by_name("Control2")) {
         new_type = PinType::VOID;
     } else if (mat == &_materials.get_by_name("Void")) {
         new_type = PinType::MODERATOR;

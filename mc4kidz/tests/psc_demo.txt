@@ -1,0 +1,84 @@
+0 toggle_boundary
+0 set_material 2.5 5.5  moderator
+0 set_material 2.5 8.5  moderator
+0 set_material 2.5 11.5 moderator
+
+0 set_material 3.5 3.5  moderator
+0 set_material 3.5 13.5 moderator
+
+0 set_material 5.5 2.5  moderator
+0 set_material 5.5 5.5  moderator
+0 set_material 5.5 8.5  moderator
+0 set_material 5.5 11.5 moderator
+0 set_material 5.5 14.5 moderator
+
+0 set_material 8.5 2.5  moderator
+0 set_material 8.5 5.5  moderator
+0 set_material 8.5 8.5  moderator
+0 set_material 8.5 11.5 moderator
+0 set_material 8.5 14.5 moderator
+
+0 set_material 11.5 2.5  moderator
+0 set_material 11.5 5.5  moderator
+0 set_material 11.5 8.5  moderator
+0 set_material 11.5 11.5 moderator
+0 set_material 11.5 14.5 moderator
+
+0 set_material 13.5 3.5  moderator
+0 set_material 13.5 13.5 moderator
+
+0 set_material 14.5 5.5  moderator
+0 set_material 14.5 8.5  moderator
+0 set_material 14.5 11.5 moderator
+0 add_particles 8.5 8.5 500
+
+10000 set_material 2.5 5.5 control
+0 set_material 2.5 8.5 control
+0 set_material 2.5 11.5 control
+
+0 set_material 3.5 3.5 control
+0 set_material 3.5 13.5 control
+
+0 set_material 5.5 2.5 control
+0 set_material 5.5 5.5 control
+0 set_material 5.5 8.5 control
+0 set_material 5.5 11.5 control
+0 set_material 5.5 14.5 control
+
+0 set_material 8.5 2.5 control
+0 set_material 8.5 5.5 control
+#0 toggle_material 8.5 8.5
+0 set_material 8.5 11.5 control
+0 set_material 8.5 14.5 control
+
+0 set_material 11.5 2.5 control
+0 set_material 11.5 5.5 control
+0 set_material 11.5 8.5 control
+0 set_material 11.5 11.5 control
+0 set_material 11.5 14.5 control
+
+0 set_material 13.5 3.5 control
+0 set_material 13.5 13.5 control
+
+0 set_material 14.5 5.5 control
+0 set_material 14.5 8.5 control
+0 set_material 14.5 11.5 control
+
+2000 toggle_boundary
+
+2000 reset
+
+0 toggle_boundary
+0 cycle_all
+0 cycle_all
+0 set_material 0.01 0.01 void
+0 add_particles 13.0 7.0 1000
+0 add_particles 5.0 13.0 1000
+
+10000 noop
+
+0 cycle_all
+0 cycle_all
+0 set_material 0.01 0.01 moderator
+0 toggle_boundary
+0 reset

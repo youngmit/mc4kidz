@@ -13,6 +13,7 @@ enum class Instruction : uint8_t {
     RESET,
     TOGGLE_BOUNDARY,
     TOGGLE_MATERIAL,
+	CYCLE_ALL,
 	SET_MATERIAL,
 	ADD_PARTICLES,
     NOOP,

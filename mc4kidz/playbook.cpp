@@ -97,6 +97,20 @@ private:
     float _y;
 };
 
+class CycleAllPinsCommand : public Command {
+public:
+    CycleAllPinsCommand()
+    {
+        std::cout << "cycle all pin materials";
+        return;
+    }
+
+    void execute(State *state) const override final
+    {
+        state->cycle_all();
+    }
+};
+
 class SetMaterialCommand : public Command {
 public:
     SetMaterialCommand(std::stringstream &args)
@@ -223,6 +237,9 @@ Playbook::Playbook(const std::string &fname)
         case Instruction::TOGGLE_MATERIAL:
             cmd = std::make_unique<ToggleMaterialCommand>(line);
             break;
+        case Instruction::CYCLE_ALL:
+            cmd = std::make_unique<CycleAllPinsCommand>();
+            break;
         case Instruction::SET_MATERIAL:
             cmd = std::make_unique<SetMaterialCommand>(line);
             break;
@@ -253,6 +270,7 @@ const std::unordered_map<std::string, Instruction> Playbook::_instruction_map = 
     {"reset", Instruction::RESET},
     {"toggle_boundary", Instruction::TOGGLE_BOUNDARY},
     {"toggle_material", Instruction::TOGGLE_MATERIAL},
+    {"cycle_all", Instruction::CYCLE_ALL},
     {"set_material", Instruction::SET_MATERIAL},
     {"add_particles", Instruction::ADD_PARTICLES},
     {"noop", Instruction::NOOP},
