@@ -246,26 +246,20 @@ void State::draw() const
     // Print statistics, etc
     std::stringstream sstream;
     sstream << "Neutron population: " << _particles.size();
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
     glRasterPos2f(1.0f, 1.0f);
     auto pop_str  = sstream.str();
     const char *c = pop_str.c_str();
-    glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char *)c);
-
-    sstream.str("");
-
-    sstream << "Mean dist. to collision: " << _mesh.mean_distance_to_collision();
-    auto mdtc_str = sstream.str();
-    glRasterPos2f(1.0f, 1.5f);
-    glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char *)mdtc_str.c_str());
+    glutBitmapString(GLUT_BITMAP_HELVETICA_10, (const unsigned char *)c);
 
     sstream.str("");
 
     sstream << "Time step: " << _time_step;
     auto ts_str = sstream.str();
     glRasterPos2f(1.0f, 2.0f);
-    glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char *)ts_str.c_str());
+    glutBitmapString(GLUT_BITMAP_HELVETICA_10, (const unsigned char *)ts_str.c_str());
 
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     for (size_t gen = 0; gen < _generation_born.size(); ++gen) {
         sstream.str("");
         sstream << "Generation " << gen << ": " << _generation_born[gen] << " ("

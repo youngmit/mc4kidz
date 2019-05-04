@@ -27,6 +27,7 @@ static const int INFO_PANE_WIDTH = 150;
 std::unique_ptr<State> state;
 std::unique_ptr<InfoPane> info_pane;
 
+bool fullscreen = false;
 int frame = 0;
 int time  = 0;
 int time_base = 0;
@@ -53,11 +54,12 @@ void display()
                 time_base = time;
                 frame    = 0;
     }
+    /*
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glRasterPos2f(0.0f, 0.0f);
     auto fps_str = std::to_string(fps);
     glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char *)fps_str.c_str());
-
+	*/
     glFlush();
 }
 
@@ -110,6 +112,13 @@ void key(unsigned char key, int x, int y)
     case 'c':
         state->cycle_all();
         break;
+    case 'f':
+        if (!fullscreen) {
+            glutFullScreen();
+        } else {
+            glutReshapeWindow(512, 512);
+        }
+        fullscreen = !fullscreen;
     case ' ':
         state->tic(true);
         glutPostRedisplay();
