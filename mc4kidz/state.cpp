@@ -173,7 +173,9 @@ void State::tic(bool force)
 
         if (process) {
             _process_queue.push_back(id);
-        }
+        } else {
+            _back_particles.push_back(p);
+		}
 
         ++id;
     }
@@ -182,12 +184,8 @@ void State::tic(bool force)
         interact(id);
     }
 
-    _process_queue.clear();
-
-    // remove dead particles
-    auto new_end = std::remove_if(_particles.begin(), _particles.end(),
-                                  [](Particle &p) { return !p.alive; });
-    _particles.erase(new_end, _particles.end());
+    _particles.swap(_back_particles);
+    _back_particles.clear();
 
     if (_time_step % _history_resolution == 0) {
         if (_population_history.size() == MAX_POP_HIST) {
@@ -197,10 +195,6 @@ void State::tic(bool force)
     }
     assert(_particles.size() == std::accumulate(_generation_population.begin(),
                                                 _generation_population.end(), 0));
-
-    if (_time_step > 10000) {
-        toggle_pause();
-    }
 }
 
 void State::resample()
@@ -222,17 +216,20 @@ void State::draw() const
         _boundary.draw();
     }
 
+    glBegin(GL_POINTS);
     for (auto &p : _particles) {
-        Circle c(_particle_colors[p.generation % _particle_colors.size()], p.location,
-                 0.02f);
-        c.draw();
+        const auto &c = _particle_colors[p.generation % _particle_colors.size()];
+        glColor4f(c.r, c.g, c.b, c.a);
+        glVertex2f(p.location.x, p.location.y);
         if (_draw_waypoints) {
+            glColor4f(PARTICLE_DEST_COLOR.r, PARTICLE_DEST_COLOR.g,
+                      PARTICLE_DEST_COLOR.b, PARTICLE_DEST_COLOR.a);
             for (const auto waypoint : p.waypoints) {
-                c = Circle(PARTICLE_DEST_COLOR, waypoint, 0.02f);
-                c.draw();
+                glVertex2f(waypoint.x, waypoint.y);
             }
         }
     }
+    glEnd();
 
     if (_labels) {
         glColor3f(1.0f, 1.0f, 1.0f);
@@ -303,6 +300,7 @@ void State::interact(size_t id)
         p.e_group    = mat->scatter_cdf[p.e_group].sample(scat_r);
         p.direction  = {std::sin(angle), std::cos(angle)};
         _mesh.transport_particle(p, _random);
+        _back_particles.push_back(p);
         return;
     }
     if (interaction == Interaction::FISSION) {
@@ -325,7 +323,7 @@ void State::interact(size_t id)
             _generation_population[p2.generation] += 1;
             p2.material = mat;
             _mesh.transport_particle(p2, _random);
-            _particles.push_back(p2);
+            _back_particles.push_back(p2);
         }
         return;
     }
@@ -408,7 +406,7 @@ void State::cycle_all()
     _mesh.set_color_material_all_shapes(new_c, new_mat);
     _current_pin_type = new_type;
 
-	resample();
+    resample();
 }
 
 Particle State::_new_particle(Vec2 location) const

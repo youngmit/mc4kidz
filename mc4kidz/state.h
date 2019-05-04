@@ -139,8 +139,13 @@ private:
 
     const std::vector<Color> _particle_colors;
 
+	// Current set of particles
     std::vector<Particle> _particles;
-    // Collection of indices into _particles which need to process a collision
+
+	// "Back" set of particles. Fission neutrons are born in here, surviving particles stashed here as well. swap at end of tic()
+    std::vector<Particle> _back_particles;
+
+	// Collection of indices into _particles which need to process a collision
     // this time step.
     // Kept as object state to prevent reallocation.
     std::vector<size_t> _process_queue;
