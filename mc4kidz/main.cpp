@@ -28,7 +28,7 @@ std::unique_ptr<State> state;
 std::unique_ptr<InfoPane> info_pane;
 
 int frame = 0;
-int time  = 0;
+int time_now  = 0;
 int time_base = 0;
 float fps     = 0.0;
 
@@ -46,11 +46,11 @@ void display()
     info_pane->draw();
 
 	frame++;
-    time = glutGet(GLUT_ELAPSED_TIME);
+    time_now = glutGet(GLUT_ELAPSED_TIME);
 
-    if (time - time_base > 1000) {
-                fps = frame*1000.0/(time-time_base);
-                time_base = time;
+    if (time_now - time_base > 1000) {
+                fps = frame*1000.0/(time_now-time_base);
+                time_base = time_now;
                 frame    = 0;
     }
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);

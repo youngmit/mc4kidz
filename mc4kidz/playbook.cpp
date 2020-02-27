@@ -175,8 +175,9 @@ private:
 
 Playbook::Playbook()
 {
+    auto ss = std::stringstream("8.5 8.5 200");
     _commands.push_back(std::make_pair(
-        0, std::make_unique<AddParticlesCommand>(std::stringstream("8.5 8.5 200"))));
+        0, std::make_unique<AddParticlesCommand>(ss)));
     return;
 }
 
