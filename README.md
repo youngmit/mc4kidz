@@ -59,8 +59,8 @@ The particle tracking in MC 4 Kidz! is also unphysical, in that particle motion
 is constrained to the 2-D plane. As a result, particles tend to move "farther"
 than they ought to, since in the real 3-D world particles should have velocity
 components into/out of the page/screen. This is done for a couple of reasons:
- # simplicity; accuracy isn't even close to a priority,
- # clarity; as noted above, particles travel at different speeds, and MC 4 Kidz!
+ - simplicity; accuracy isn't even close to a priority,
+ - clarity; as noted above, particles travel at different speeds, and MC 4 Kidz!
  attempts to illustrate this with different particle velocities on the screen.
  Allowing particles to travel perpendicular to the screen would make the
  distinct velocities harder to see (e.g., a fast particle travelling mostly out
