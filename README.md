@@ -21,11 +21,11 @@ Screenshot:
 # How to build
 MC 4 Kidz! should work under Windows and Linux, and is built using CMake.
 It is based on OpenGL and GLUT for now, so you will need these in your system.
-In linux this usually means having your video driver set up and some sort of `dev` package with the OpenGL headers, and `freeglut`.
-Under windows, I found it pretty easy to obtain these using `vcpkg`. Check that out over at https://github.com/Microsoft/vcpkg.
+In linux this usually means having your video driver set up and some sort of `dev` package with the OpenGL headers, as well as the `freeglut` package.
+Under Windows, I found it pretty easy to obtain these using `vcpkg`. Check that out over at https://github.com/Microsoft/vcpkg.
 I use `std::optional` in some places, so a C++17 compiler is necessary.
 
-If you're in windows, just get a hold of the latest version of VS and open the directory that you cloned this repository into and it should sort of do the rest.
+If you're in Windows, just get a hold of the latest version of VS and open the directory that you cloned this repository into and it should sort of do the rest.
 What a fascinating modern world we live in.
 
 In linux just make a build directory somewhere, `cd` into it and run something like `cmake [path to repo]`, then `make`.
@@ -50,6 +50,7 @@ This is done for simplicity, and because accuracy isn't even close to a priority
 The controls for MC 4 Kidz! are admittedly esoteric, but pretty simple:
  - `r`: Restart the simulation
  - `p`: Play/pause the simulation
+ - `f`: Toggle fullscreen
  - `space`: Advance the simulation by one frame when paused
  - `b`: Toggle the reflective boundary condition
  - `l`: Toggle particle labels (useful for debugging)
