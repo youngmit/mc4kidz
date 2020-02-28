@@ -32,13 +32,22 @@ int time_now  = 0;
 int time_base = 0;
 float fps     = 0.0;
 
+bool fullscreen = false;
+// window size before going fullscreen
+int old_width = 512;
+int old_height = 512;
+
+// actual window size
+int window_width = 512;
+int window_height = 512;
+
 void display()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    int window_width  = glutGet(GLUT_WINDOW_WIDTH);
-    int window_height = glutGet(GLUT_WINDOW_HEIGHT);
+    window_width  = glutGet(GLUT_WINDOW_WIDTH);
+    window_height = glutGet(GLUT_WINDOW_HEIGHT);
 
     glViewport(0, 0, window_width, window_height);
 
@@ -110,6 +119,17 @@ void key(unsigned char key, int x, int y)
     case 'c':
         state->cycle_all();
         break;
+    case 'f':
+        if (fullscreen) {
+            glutReshapeWindow(old_width, old_height);
+            glutPositionWindow(20, 20);
+        } else {
+            old_width = window_width;
+            old_height = window_height;
+            glutFullScreen();
+        }
+        fullscreen = !fullscreen;
+        break;
     case ' ':
         state->tic(true);
         glutPostRedisplay();
@@ -120,8 +140,8 @@ void key(unsigned char key, int x, int y)
 
 void mouse(int button, int button_state, int x, int y)
 {
-    int window_width  = glutGet(GLUT_WINDOW_WIDTH);
-    int window_height = glutGet(GLUT_WINDOW_HEIGHT);
+    window_width  = glutGet(GLUT_WINDOW_WIDTH);
+    window_height = glutGet(GLUT_WINDOW_HEIGHT);
 
     // This is some nasty jazz. Should probably make a class to manage the
     // display...
@@ -153,8 +173,8 @@ void mouse(int button, int button_state, int x, int y)
 
 void mouse_drag(int x, int y)
 {
-    int window_width  = glutGet(GLUT_WINDOW_WIDTH);
-    int window_height = glutGet(GLUT_WINDOW_HEIGHT);
+    window_width  = glutGet(GLUT_WINDOW_WIDTH);
+    window_height = glutGet(GLUT_WINDOW_HEIGHT);
 
     // This is some nasty jazz. Should probably make a class to manage the
     // display...
@@ -194,7 +214,7 @@ int main(int argc, char *argv[])
     }
 
     glutInit(&argc, argv);
-    glutInitWindowSize(512, 512);
+    glutInitWindowSize(window_width, window_height);
     glutInitWindowPosition(50, 50);
     glutCreateWindow("MC 4 Kidz!");
     glutDisplayFunc(display);
