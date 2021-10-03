@@ -15,6 +15,9 @@ public:
         return;
     }
 
+    /**
+     * Push particle forward, returning whether it has reached its destination
+     */
     bool tic(float t)
     {
         float delta = base_speed / (float)(e_group + 1) * t;

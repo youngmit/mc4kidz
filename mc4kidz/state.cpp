@@ -148,7 +148,6 @@ void State::tic(bool force)
                 process = false;
                 _n_leak++;
                 _generation_population[p.generation]--;
-                continue;
             }
             if (_bc == BoundaryCondition::REFLECTIVE) {
                 if (p.location.x < 0.0f) {
@@ -173,7 +172,7 @@ void State::tic(bool force)
 
         if (process) {
             _process_queue.push_back(id);
-        } else {
+        } else if (p.alive) {
             _back_particles.push_back(p);
 		}
 
